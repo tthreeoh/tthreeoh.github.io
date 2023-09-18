@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style> 
+body {
+    background-color: black;
+    color: white;
+}
+#submits {
+    background-color: white;
+    color: black;
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+#moviesubmitbox {
+    background-color: white;
+    color: black;
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+#showsubmitbox {
+    background-color: white;
+    color: black;
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+#demo {
+    background-color: white;
+    color: black;
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+#videobox {
+    background-color: white;
+    color: black;
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+
+</style>
+</head>
+<body>
+
+<div id="submits" style="position:absolute; top:20%; right:80%; width:auto; height:auto">
+    <div id="apikeybox">
+        OMDB APIkey:<input type="text" id="apikey" value="omdb api key " style="width:80px"><br>
+    </div>
+
+    <div id="moviesubmitbox">
+        <input type="text" id="movietitle" value="Barbie ">
+        <button id="movieBtn">movie</button><br>
+    </div>
+    <div id="showsubmitbox" >
+        <input type="text" id="showtitle" value="" >
+        <input type="text" id="season" style="width: 20px;" value="">
+        <input type="text" id="episode" style="width: 20px;" value="">
+        <button id="showBtn">show</button>
+    </div>
+    <p id="demo">
+    Type a Title and Search for a movie or show
+    </p>
+</div>
+<div id="videobox" style="position:absolute; top:0; left:20%; width:78%; height:96%">
+<iframe src="about:blank" id="iframeResult" style='width:100%;height:100%;border:none; allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true' scrolling='no' frameborder='0' allow='autoplay; fullscreen; vr'></iframe>
+</div>
+
+<script> 
+
+function getJson(url) {
+    return fetch(url)
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(myJson) {
+        return myJson;
+    });
+}
+function get_api_key() {
+    return document.getElementById("apikey").value;
+}
+
+document.getElementById("movieBtn").addEventListener("click", function() {
+    //make json request to ombd
+    let title = document.getElementById("movietitle").value;
+    if (title == "") {
+        return;
+    }
+    title = title.replace(/ /g,"+");
+    var url = "http://www.omdbapi.com/?t="+title+"&apikey="+get_api_key()+"&r=json&plot=full";
+    //make json request to ombd
+    var json = getJson(url);
+    json.then(function(result) {
+        document.getElementById("demo").innerHTML = result.Title + " " + result.Year + " " + result.Rated + " Runtime:" + result.Runtime + "<br><img src='"+result.Poster+"'></img><br>IMDB rating :" + result.imdbRating + "<br>Plot:<br>" + result.Plot;
+        document.getElementById("iframeResult").src = "https://vidsrc.me/embed/"+result.imdbID;
+
+    });
+    document.getElementById("showtitle").value="";
+    document.getElementById("season").value="";
+    document.getElementById("episode").value="";
+});
+document.getElementById("showBtn").addEventListener("click", function() {
+    document.getElementById("movietitle").value="";
+    let showtitle = document.getElementById("showtitle").value;
+    let season = document.getElementById("season").value;
+    let episode = document.getElementById("episode").value;
+    if (season == "" || season == "0"){
+        season = "1";
+        document.getElementById("season").value="1";
+    }
+    if (episode == "" || episode == "0"){
+        episode = "1";
+        document.getElementById("episode").value="1";
+    }
+    showtitle = showtitle.replace(/ /g,"+");
+    var url = "http://www.omdbapi.com/?t="+showtitle+"&apikey="+get_api_key()+"&r=json&type=series";
+    //make json request to ombd
+    var json = getJson(url);
+    json.then(function(result) {
+        document.getElementById("demo").innerHTML = result.Title + " " + result.Year + " " + result.Rated + " Runtime:" + result.Runtime + "<br><img src='"+result.Poster+"'></img><br>IMDB rating :" + result.imdbRating + "<br>Plot:<br>" + result.Plot;
+        text = "https://vidsrc.me/embed/tv?imdb="+result.imdbID+"&season="+season+"&episode="+episode
+        document.getElementById("iframeResult").src = text;
+
+    });
+});
+
+</script>
+
+</body>
+</html>
