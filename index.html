@@ -1,135 +1,1491 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style> 
-body {
-    background-color: black;
-    color: white;
-}
-#submits {
-    background-color: white;
-    color: black;
-    padding: 10px;
-    border: 1px solid black;
-    border-radius: 5px;
-}
-#moviesubmitbox {
-    background-color: white;
-    color: black;
-    padding: 10px;
-    border: 1px solid black;
-    border-radius: 5px;
-}
-#showsubmitbox {
-    background-color: white;
-    color: black;
-    padding: 10px;
-    border: 1px solid black;
-    border-radius: 5px;
-}
-#demo {
-    background-color: white;
-    color: black;
-    padding: 10px;
-    border: 1px solid black;
-    border-radius: 5px;
-}
-#videobox {
-    background-color: white;
-    color: black;
-    padding: 10px;
-    border: 1px solid black;
-    border-radius: 5px;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roku Remote Control</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-</style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            min-height: 100vh;
+            padding: 10px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .remote {
+            width: 100%;
+            max-width: 280px;
+            min-width: 200px;
+            background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
+            border-radius: 25px;
+            padding: 25px 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .remote::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+
+        .top-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0 25px 0;
+        }
+
+        .brand {
+            font-size: 18px;
+            font-weight: bold;
+            color: #8b5cf6;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+        }
+
+        .ip-section {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .ip-input {
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .status {
+            font-size: 10px;
+            opacity: 0.8;
+            min-height: 15px;
+        }
+
+        .status.success { color: #10b981; }
+        .status.error { color: #ef4444; }
+
+        /* Remote Sections */
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Power Button */
+        .power-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #dc2626, #991b1b);
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transition: all 0.15s ease;
+        }
+
+        .power-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .power-btn:active {
+            transform: translateY(0);
+        }
+
+        /* D-Pad Navigation */
+        .dpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 4px;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 25px auto;
+            position: relative;
+        }
+
+        .dpad::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(145deg, #404040, #2a2a2a);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .dpad-btn {
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .dpad-btn:hover {
+            background: linear-gradient(145deg, #4a4a4a, #3a3a3a);
+        }
+
+        .dpad-btn:active {
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-up { grid-column: 2; border-radius: 10px 10px 4px 4px; }
+        .btn-left { grid-column: 1; grid-row: 2; border-radius: 10px 4px 4px 10px; }
+        .btn-ok { 
+            grid-column: 2; 
+            grid-row: 2; 
+            background: linear-gradient(145deg, #8b5cf6, #7c3aed);
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .btn-right { grid-column: 3; grid-row: 2; border-radius: 4px 10px 10px 4px; }
+        .btn-down { grid-column: 2; grid-row: 3; border-radius: 4px 4px 10px 10px; }
+
+        /* Volume Controls */
+        .volume-controls {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .vol-btn {
+            padding: 12px;
+            background: linear-gradient(145deg, #1f2937, #111827);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .vol-btn:hover {
+            background: linear-gradient(145deg, #374151, #1f2937);
+        }
+
+        .mute-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #dc2626, #991b1b);
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        /* Media Controls */
+        .media-controls {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+
+        .media-btn {
+            padding: 6px 8px;
+            background: linear-gradient(145deg, #374151, #1f2937);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            height: 36px;
+        }
+
+        .media-btn:hover {
+            background: linear-gradient(145deg, #4b5563, #374151);
+            transform: translateY(-1px);
+        }
+
+        .media-btn:active {
+            transform: translateY(0);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Home and Back buttons */
+        .nav-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .nav-btn {
+            padding: 12px;
+            background: linear-gradient(145deg, #059669, #047857);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-btn:hover {
+            background: linear-gradient(145deg, #10b981, #059669);
+            transform: translateY(-1px);
+        }
+
+        /* App Grid */
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .app-btn {
+            padding: 10px 6px;
+            background: linear-gradient(145deg, #1e40af, #1e3a8a);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .app-btn:hover {
+            background: linear-gradient(145deg, #2563eb, #1e40af);
+            transform: translateY(-1px);
+        }
+
+        .app-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Open Drawer Button */
+        .open-drawer-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(145deg, #8b5cf6, #7c3aed);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .open-drawer-btn:hover {
+            background: linear-gradient(145deg, #a855f7, #8b5cf6);
+            transform: translateY(-1px);
+        }
+
+        /* BOTTOM DRAWER STYLES */
+        .apps-drawer {
+            position: fixed;
+            bottom: -100vh;
+            left: 0;
+            right: 0;
+            height: 60vh;
+            background: linear-gradient(145deg, #1f1f1f, #0f0f0f);
+            border-radius: 20px 20px 0 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: none;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+            transition: bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .apps-drawer.open {
+            bottom: 0;
+        }
+
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .drawer-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .drawer-header {
+            padding: 20px 20px 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .drawer-handle {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+        }
+
+        .drawer-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #8b5cf6;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-drawer-btn {
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+
+        .close-drawer-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .drawer-controls {
+            padding: 0 20px 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .drawer-btn {
+            flex: 1;
+            padding: 8px 12px;
+            background: linear-gradient(145deg, #1e40af, #1e3a8a);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .drawer-btn.secondary {
+            background: linear-gradient(145deg, #7c2d12, #92400e);
+        }
+
+        .drawer-btn:hover {
+            transform: translateY(-1px);
+            background: linear-gradient(145deg, #2563eb, #1e40af);
+        }
+
+        .drawer-btn.secondary:hover {
+            background: linear-gradient(145deg, #c2410c, #ea580c);
+        }
+
+        .cors-help {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            margin: 0 20px 15px 20px;
+            line-height: 1.3;
+            padding: 10px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 6px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            flex-shrink: 0;
+        }
+
+        .sort-controls {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .sort-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-right: 10px;
+        }
+
+        .sort-btn {
+            padding: 6px 10px;
+            background: linear-gradient(145deg, #374151, #1f2937);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 
+                0 1px 3px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .sort-btn.active {
+            background: linear-gradient(145deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+
+        .sort-btn:hover {
+            background: linear-gradient(145deg, #4b5563, #374151);
+            transform: translateY(-1px);
+        }
+
+        .sort-btn.active:hover {
+            background: linear-gradient(145deg, #a855f7, #8b5cf6);
+        }
+
+        .drawer-apps-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 20px 20px 20px;
+            overscroll-behavior: contain;
+        }
+
+        .app-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin: 4px 0;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+        .app-item:hover {
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .app-item.tv-input {
+            background: linear-gradient(145deg, #0f5132, #0d4228);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .app-item.tv-input:hover {
+            background: linear-gradient(145deg, #16a085, #0f5132);
+        }
+
+        .app-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: linear-gradient(145deg, #8b5cf6, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .app-item.tv-input .app-icon {
+            background: linear-gradient(145deg, #10b981, #059669);
+        }
+
+        .app-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .app-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: white;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .app-id {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: monospace;
+        }
+
+        .app-launch-btn {
+            padding: 6px 12px;
+            background: linear-gradient(145deg, #1e40af, #1e3a8a);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            margin-left: 10px;
+            flex-shrink: 0;
+        }
+
+        .app-launch-btn:hover {
+            background: linear-gradient(145deg, #2563eb, #1e40af);
+            transform: translateY(-1px);
+        }
+
+        /* Manual sorting controls */
+        .manual-sort-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-left: 8px;
+        }
+
+        .sort-control-btn {
+            width: 24px;
+            height: 20px;
+            background: linear-gradient(145deg, #374151, #1f2937);
+            border: none;
+            border-radius: 3px;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sort-control-btn:hover:not(:disabled) {
+            background: linear-gradient(145deg, #4b5563, #374151);
+            transform: scale(1.1);
+        }
+
+        .sort-control-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .app-item[draggable="true"] {
+            cursor: grab;
+        }
+
+        .app-item[draggable="true"]:active {
+            cursor: grabbing;
+        }
+
+        .app-item.dragging {
+            opacity: 0.5;
+            transform: rotate(2deg);
+        }
+
+        /* XML Dialog */
+        .xml-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1100;
+        }
+
+        .xml-dialog-content {
+            background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
+            border-radius: 15px;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .xml-dialog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .xml-dialog-header h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .xml-dialog-body {
+            margin-bottom: 20px;
+        }
+
+        .xml-dialog-body p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        #xml-input {
+            width: 100%;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            color: white;
+            font-family: monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+
+        .xml-dialog-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .dialog-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.15s ease;
+        }
+
+        .cancel-btn {
+            background: linear-gradient(145deg, #6b7280, #4b5563);
+            color: white;
+        }
+
+        .load-btn {
+            background: linear-gradient(145deg, #059669, #047857);
+            color: white;
+        }
+
+        .dialog-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Scrollbar styling */
+        .drawer-apps-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .drawer-apps-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .drawer-apps-list::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.5);
+            border-radius: 3px;
+        }
+
+        .drawer-apps-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.7);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .remote {
+                max-width: 100%;
+                margin: 5px 5px 20px 5px;
+                padding: 20px 15px;
+            }
+            
+            body {
+                align-items: center;
+                padding: 5px;
+            }
+            
+            .dpad {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .brand {
+                font-size: 16px;
+            }
+            
+            .apps-drawer {
+                height: 70vh;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .remote {
+                min-width: 180px;
+                padding: 15px 10px;
+            }
+            
+            .dpad {
+                width: 110px;
+                height: 110px;
+            }
+            
+            .app-btn {
+                padding: 8px 4px;
+                font-size: 9px;
+            }
+            
+            .media-btn {
+                padding: 6px 6px;
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
 <body>
-
-<div id="submits" style="position:absolute; top:20%; right:80%; width:auto; height:auto">
-    <div id="apikeybox">
-        OMDB APIkey:<input type="text" id="apikey" value="omdb api key " style="width:80px"><br>
+    <div class="remote">
+        <div class="top-section">
+            <button class="power-btn" onclick="sendCommand('PowerOff')">⚡</button>
+            <div class="brand">ROKU</div>
+            <div></div>
+        </div>
+        
+        <div class="ip-section">
+            <div class="ip-input">
+                <input type="text" id="rokuIP" placeholder="192.168.1.100" value="192.168.0.190">
+            </div>
+            <div class="status" id="status">Enter IP address</div>
+        </div>
+        
+        <div class="nav-controls">
+            <button class="nav-btn" onclick="sendCommand('Home')">🏠 HOME</button>
+            <button class="nav-btn" onclick="sendCommand('Back')">⬅️ BACK</button>
+        </div>
+        
+        <div class="dpad">
+            <div></div>
+            <button class="dpad-btn btn-up" onclick="sendCommand('Up')">⬆️</button>
+            <div></div>
+            <button class="dpad-btn btn-left" onclick="sendCommand('Left')">⬅️</button>
+            <button class="dpad-btn btn-ok" onclick="sendCommand('Select')">OK</button>
+            <button class="dpad-btn btn-right" onclick="sendCommand('Right')">➡️</button>
+            <div></div>
+            <button class="dpad-btn btn-down" onclick="sendCommand('Down')">⬇️</button>
+            <div></div>
+        </div>
+        
+        <div class="volume-controls">
+            <button class="vol-btn" onclick="sendCommand('VolumeDown')">🔉 VOL -</button>
+            <button class="mute-btn" onclick="sendCommand('VolumeMute')">🔇</button>
+            <button class="vol-btn" onclick="sendCommand('VolumeUp')">🔊 VOL +</button>
+        </div>
+        
+        <div class="media-controls">
+            <button class="media-btn" onclick="sendCommand('Rev')">⏪</button>
+            <button class="media-btn" onclick="sendCommand('Play')">▶️</button>
+            <button class="media-btn" onclick="sendCommand('Pause')">⏸️</button>
+            <button class="media-btn" onclick="sendCommand('Fwd')">⏩</button>
+        </div>
+        
+        <div class="section">
+            <div class="app-grid">
+                <button class="app-btn" onclick="launchApp('12')">📺<br>Netflix</button>
+                <button class="app-btn" onclick="launchApp('837')">📹<br>YouTube</button>
+                <button class="app-btn" onclick="launchApp('13')">📦<br>Prime</button>
+                <button class="app-btn" onclick="launchApp('2285')">🟢<br>Hulu</button>
+                <button class="app-btn" onclick="launchApp('291097')">🏰<br>Disney+</button>
+                <button class="app-btn" onclick="launchApp('61322')">🎬<br>HBO Max</button>
+                <button class="app-btn" onclick="sendCommand('Search')">🔍<br>Search</button>
+                <button class="app-btn" onclick="sendCommand('Info')">ℹ️<br>Info</button>
+                <button class="app-btn" onclick="sendCommand('InstantReplay')">↩️<br>Replay</button>
+            </div>
+            
+            <button class="open-drawer-btn" onclick="openDrawer()">
+                📱 All Apps
+                <span style="font-size: 12px;">↑</span>
+            </button>
+        </div>
     </div>
 
-    <div id="moviesubmitbox">
-        <input type="text" id="movietitle" value="Plan 9 from Outer Space">
-        <button id="movieBtn">movie</button><br>
+    <!-- Apps Drawer -->
+    <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+    <div id="apps-drawer" class="apps-drawer">
+        <div class="drawer-handle"></div>
+        
+        <div class="drawer-header">
+            <div class="drawer-title">
+                📱 All Apps
+            </div>
+            <button class="close-drawer-btn" onclick="closeDrawer()">✕</button>
+        </div>
+        
+        <div class="drawer-controls">
+            <button class="drawer-btn" onclick="loadInstalledApps()">🔄 Refresh</button>
+            <button class="drawer-btn secondary" onclick="openAppsXML()">📋 Manual</button>
+        </div>
+        
+        <div class="cors-help">
+            📡 Due to browser security, apps may not load automatically.<br>
+            Use "Manual" button if "Refresh" fails.
+        </div>
+        
+        <div class="sort-controls">
+            <span class="sort-label">Sort:</span>
+            <button class="sort-btn active" data-sort="name" onclick="setSortMode('name')">A-Z</button>
+            <button class="sort-btn" data-sort="type" onclick="setSortMode('type')">Type</button>
+            <button class="sort-btn" data-sort="manual" onclick="setSortMode('manual')">Manual</button>
+        </div>
+        
+        <div class="drawer-apps-list" id="drawer-apps-list">
+            <!-- Apps will be populated here -->
+        </div>
     </div>
-    <div id="showsubmitbox" >
-        <input type="text" id="showtitle" value="" >
-        <input type="text" id="season" style="width: 20px;" value="">
-        <input type="text" id="episode" style="width: 20px;" value="">
-        <button id="showBtn">show</button>
+
+    <!-- XML Paste Dialog -->
+    <div id="xml-dialog" class="xml-dialog">
+        <div class="xml-dialog-content">
+            <div class="xml-dialog-header">
+                <h3>Paste Apps XML</h3>
+                <button class="close-btn" onclick="hideXMLPasteDialog()">✕</button>
+            </div>
+            <div class="xml-dialog-body">
+                <p>Copy XML from the opened window and paste here:</p>
+                <textarea id="xml-input" placeholder="<?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?>&#10;<apps>&#10;  <app id=&quot;12&quot; type=&quot;appl&quot;>Netflix</app>&#10;  ...&#10;</apps>"></textarea>
+            </div>
+            <div class="xml-dialog-footer">
+                <button class="dialog-btn cancel-btn" onclick="hideXMLPasteDialog()">Cancel</button>
+                <button class="dialog-btn load-btn" onclick="loadPastedXML()">Load Apps</button>
+            </div>
+        </div>
     </div>
-    <p id="demo">
-    Type a Title and Search for a movie or show
-    </p>
-</div>
-<div id="videobox" style="position:absolute; top:0; left:20%; width:78%; height:96%">
-<iframe src="about:blank" id="iframeResult" style='width:100%;height:100%;border:none; allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true' scrolling='no' frameborder='0' allow='autoplay; fullscreen; vr'></iframe>
-</div>
 
-<script> 
+    <script>
+        // Enhanced Roku Remote with Bottom Drawer - COMPLETE VERSION
+        let rokuIP = '';
+        let allApps = [];
+        let currentSortMode = 'name'; // 'name', 'type', 'manual'
+        const statusEl = document.getElementById('status');
+        const ipInput = document.getElementById('rokuIP');
 
-function getJson(url) {
-    return fetch(url)
-    .then(function(response) {
-        return response.json();
-    })
-    .then(function(myJson) {
-        return myJson;
-    });
-}
-function get_api_key() {
-    return document.getElementById("apikey").value;
-}
+        // IP Input Handler
+        ipInput.addEventListener('input', function(e) {
+            rokuIP = e.target.value.trim();
+            if (rokuIP) {
+                updateStatus('Connected', 'success');
+            } else {
+                updateStatus('Enter IP address');
+            }
+        });
 
-document.getElementById("movieBtn").addEventListener("click", function() {
-    //make json request to ombd
-    let title = document.getElementById("movietitle").value;
-    if (title == "") {
-        return;
-    }
-    title = title.replace(/ /g,"+");
-    var url = "http://www.omdbapi.com/?t="+title+"&apikey="+get_api_key()+"&r=json&plot=full";
-    //make json request to ombd
-    var json = getJson(url);
-    json.then(function(result) {
-        document.getElementById("demo").innerHTML = result.Title + " " + result.Year + " " + result.Rated + " Runtime:" + result.Runtime + "<br><img src='"+result.Poster+"'></img><br>IMDB rating :" + result.imdbRating + "<br>Plot:<br>" + result.Plot;
-        document.getElementById("iframeResult").src = "https://vidsrc.me/embed/"+result.imdbID;
+        // Status Update Function
+        function updateStatus(message, type = '') {
+            statusEl.textContent = message;
+            statusEl.className = 'status ' + type;
+            
+            if (type) {
+                setTimeout(() => {
+                    statusEl.className = 'status';
+                    statusEl.textContent = rokuIP ? 'Connected' : 'Enter IP address';
+                }, 2000);
+            }
+        }
 
-    });
-    document.getElementById("showtitle").value="";
-    document.getElementById("season").value="";
-    document.getElementById("episode").value="";
-});
-document.getElementById("showBtn").addEventListener("click", function() {
-    document.getElementById("movietitle").value="";
-    let showtitle = document.getElementById("showtitle").value;
-    let season = document.getElementById("season").value;
-    let episode = document.getElementById("episode").value;
-    if (season == "" || season == "0"){
-        season = "1";
-        document.getElementById("season").value="1";
-    }
-    if (episode == "" || episode == "0"){
-        episode = "1";
-        document.getElementById("episode").value="1";
-    }
-    showtitle = showtitle.replace(/ /g,"+");
-    var url = "http://www.omdbapi.com/?t="+showtitle+"&apikey="+get_api_key()+"&r=json&type=series";
-    //make json request to ombd
-    var json = getJson(url);
-    json.then(function(result) {
-        document.getElementById("demo").innerHTML = result.Title + " " + result.Year + " " + result.Rated + " Runtime:" + result.Runtime + "<br><img src='"+result.Poster+"'></img><br>IMDB rating :" + result.imdbRating + "<br>Plot:<br>" + result.Plot;
-        text = "https://vidsrc.me/embed/tv?imdb="+result.imdbID+"&season="+season+"&episode="+episode
-        document.getElementById("iframeResult").src = text;
+        // Send Remote Commands
+        async function sendCommand(command) {
+            if (!rokuIP) {
+                updateStatus('Enter IP first!', 'error');
+                return;
+            }
+            
+            const url = `http://${rokuIP}:8060/keypress/${command}`;
+            
+            try {
+                updateStatus(`${command}...`);
+                
+                await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors'
+                });
+                
+                updateStatus(`✓ ${command}`, 'success');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                updateStatus(`✗ Failed`, 'error');
+            }
+        }
 
-    });
-});
+        // Launch App Function
+        async function launchApp(appId) {
+            if (!rokuIP) {
+                updateStatus('Enter IP first!', 'error');
+                return;
+            }
+            
+            const url = `http://${rokuIP}:8060/launch/${appId}`;
+            
+            try {
+                updateStatus('Launching...');
+                
+                await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors'
+                });
+                
+                updateStatus('✓ Launched', 'success');
+                
+                // Auto-close drawer after launching
+                setTimeout(() => {
+                    closeDrawer();
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                updateStatus('✗ Failed', 'error');
+            }
+        }
 
-</script>
+        // Load Apps from Roku (with CORS handling)
+        async function loadInstalledApps() {
+            if (!rokuIP) {
+                updateStatus('Enter IP first!', 'error');
+                return;
+            }
+            
+            const url = `http://${rokuIP}:8060/query/apps`;
+            
+            try {
+                updateStatus('Loading apps...');
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    const xmlText = await response.text();
+                    const apps = parseAppsXML(xmlText);
+                    allApps = apps;
+                    renderAppsInDrawer(apps);
+                    updateStatus(`✓ Loaded ${apps.length} apps`, 'success');
+                    
+                    // Open drawer if not already open
+                    if (!document.getElementById('apps-drawer').classList.contains('open')) {
+                        openDrawer();
+                    }
+                } else {
+                    throw new Error('Failed to fetch apps');
+                }
+                
+            } catch (error) {
+                console.error('CORS Error:', error);
+                updateStatus('CORS blocked - opening XML in new tab', 'error');
+                
+                window.open(url, '_blank');
+                
+                setTimeout(() => {
+                    updateStatus('Copy XML from new tab, then paste', 'error');
+                    showXMLPasteDialog();
+                }, 1000);
+            }
+        }
 
+        // Open Apps XML in new tab
+        function openAppsXML() {
+            if (!rokuIP) {
+                updateStatus('Enter IP first!', 'error');
+                return;
+            }
+            
+            const url = `http://${rokuIP}:8060/query/apps`;
+            window.open(url, '_blank');
+            updateStatus('XML opened in new tab', 'success');
+            
+            setTimeout(() => {
+                showXMLPasteDialog();
+            }, 1000);
+        }
+
+        // XML Dialog Functions
+        function showXMLPasteDialog() {
+            const dialog = document.getElementById('xml-dialog');
+            dialog.style.display = 'flex';
+        }
+
+        function hideXMLPasteDialog() {
+            const dialog = document.getElementById('xml-dialog');
+            dialog.style.display = 'none';
+            document.getElementById('xml-input').value = '';
+        }
+
+        function loadPastedXML() {
+            const xmlInput = document.getElementById('xml-input');
+            const xmlText = xmlInput.value.trim();
+            
+            if (!xmlText) {
+                updateStatus('No XML provided', 'error');
+                return;
+            }
+            
+            try {
+                const apps = parseAppsXML(xmlText);
+                allApps = apps;
+                renderAppsInDrawer(apps);
+                updateStatus(`✓ Loaded ${apps.length} items`, 'success');
+                hideXMLPasteDialog();
+                openDrawer();
+            } catch (error) {
+                updateStatus('✗ Invalid XML', 'error');
+                console.error('XML Parse Error:', error);
+            }
+        }
+
+        // Parse XML to App Objects
+        function parseAppsXML(xmlString) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+            const apps = xmlDoc.querySelectorAll('app');
+            
+            const appList = [];
+            apps.forEach((app, index) => {
+                const id = app.getAttribute('id');
+                const type = app.getAttribute('type');
+                const name = app.textContent;
+                
+                if (id && name) {
+                    appList.push({ 
+                        id, 
+                        name,
+                        type: type === 'tvin' ? 'input' : 'app',
+                        originalIndex: index,
+                        customOrder: index // For manual sorting
+                    });
+                }
+            });
+            
+            return appList;
+        }
+
+        // ===== DRAWER FUNCTIONS =====
+
+        function openDrawer() {
+            const drawer = document.getElementById('apps-drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            
+            drawer.classList.add('open');
+            overlay.classList.add('active');
+        }
+
+        function closeDrawer() {
+            const drawer = document.getElementById('apps-drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            
+            drawer.classList.remove('open');
+            overlay.classList.remove('active');
+        }
+
+        // Set Sort Mode
+        function setSortMode(mode) {
+            currentSortMode = mode;
+            
+            // Update active sort button
+            document.querySelectorAll('.sort-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-sort="${mode}"]`)?.classList.add('active');
+            
+            // Re-render apps with new sorting
+            renderAppsInDrawer(allApps);
+        }
+
+        // Sort Apps by Mode
+        function sortApps(apps, mode) {
+            const sortedApps = [...apps];
+            
+            switch (mode) {
+                case 'name':
+                    return sortedApps.sort((a, b) => a.name.localeCompare(b.name));
+                case 'type':
+                    return sortedApps.sort((a, b) => {
+                        if (a.type !== b.type) {
+                            return a.type === 'input' ? -1 : 1; // TV inputs first
+                        }
+                        return a.name.localeCompare(b.name);
+                    });
+                case 'manual':
+                    return sortedApps.sort((a, b) => a.customOrder - b.customOrder);
+                default:
+                    return sortedApps;
+            }
+        }
+
+        // Render Apps in Drawer
+        function renderAppsInDrawer(apps) {
+            const container = document.getElementById('drawer-apps-list');
+            if (!container) return;
+            
+            const sortedApps = sortApps(apps, currentSortMode);
+            container.innerHTML = '';
+            
+            if (sortedApps.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
+                        <div style="font-size: 32px; margin-bottom: 10px;">📱</div>
+                        <div>No apps loaded yet</div>
+                        <div style="font-size: 12px; margin-top: 10px;">Click "Refresh" to load your Roku apps</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            sortedApps.forEach((app, index) => {
+                const appItem = document.createElement('div');
+                appItem.className = `app-item ${app.type === 'input' ? 'tv-input' : ''}`;
+                appItem.setAttribute('data-index', index);
+                appItem.setAttribute('data-app-id', app.id);
+                
+                if (currentSortMode === 'manual') {
+                    appItem.setAttribute('draggable', 'true');
+                }
+                
+                const icon = app.type === 'input' ? '📺' : getAppIcon(app.name);
+                
+                appItem.innerHTML = `
+                    <div class="app-icon">${icon}</div>
+                    <div class="app-details">
+                        <div class="app-name">${app.name}</div>
+                        <div class="app-id">ID: ${app.id}</div>
+                    </div>
+                    <button class="app-launch-btn" onclick="launchApp('${app.id}')">
+                        Launch
+                    </button>
+                    ${currentSortMode === 'manual' ? `
+                        <div class="manual-sort-controls">
+                            <button class="sort-control-btn" onclick="moveApp(${index}, -1)" ${index === 0 ? 'disabled' : ''}>
+                                ⬆️
+                            </button>
+                            <button class="sort-control-btn" onclick="moveApp(${index}, 1)" ${index === sortedApps.length - 1 ? 'disabled' : ''}>
+                                ⬇️
+                            </button>
+                        </div>
+                    ` : ''}
+                `;
+                
+                // Add drag and drop for manual sorting
+                if (currentSortMode === 'manual') {
+                    appItem.addEventListener('dragstart', handleDragStart);
+                    appItem.addEventListener('dragover', handleDragOver);
+                    appItem.addEventListener('drop', handleDrop);
+                    appItem.addEventListener('dragend', handleDragEnd);
+                }
+                
+                container.appendChild(appItem);
+            });
+        }
+
+        // ===== MANUAL SORTING FUNCTIONS =====
+
+        function moveApp(fromIndex, direction) {
+            const sortedApps = sortApps(allApps, currentSortMode);
+            const toIndex = fromIndex + direction;
+            
+            if (toIndex < 0 || toIndex >= sortedApps.length) return;
+            
+            // Find the apps in the original array and swap their customOrder
+            const fromApp = sortedApps[fromIndex];
+            const toApp = sortedApps[toIndex];
+            
+            // Swap custom order values
+            const tempOrder = fromApp.customOrder;
+            fromApp.customOrder = toApp.customOrder;
+            toApp.customOrder = tempOrder;
+            
+            // Re-render with updated order
+            renderAppsInDrawer(allApps);
+        }
+
+        // ===== DRAG AND DROP FUNCTIONALITY =====
+
+        let draggedElement = null;
+        let draggedIndex = -1;
+
+        function handleDragStart(e) {
+            draggedElement = this;
+            draggedIndex = parseInt(this.getAttribute('data-index'));
+            this.classList.add('dragging');
+            
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', '');
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            
+            e.dataTransfer.dropEffect = 'move';
+            
+            // Visual feedback
+            this.style.borderTop = '2px solid #8b5cf6';
+            
+            return false;
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            
+            // Remove visual feedback
+            this.style.borderTop = '';
+            
+            if (draggedElement !== this && draggedIndex !== -1) {
+                const targetIndex = parseInt(this.getAttribute('data-index'));
+                
+                // Get the sorted apps to find which ones we're swapping
+                const sortedApps = sortApps(allApps, currentSortMode);
+                const draggedApp = sortedApps[draggedIndex];
+                const targetApp = sortedApps[targetIndex];
+                
+                // Swap their custom order values
+                const tempOrder = draggedApp.customOrder;
+                draggedApp.customOrder = targetApp.customOrder;
+                targetApp.customOrder = tempOrder;
+                
+                // Re-render
+                renderAppsInDrawer(allApps);
+            }
+            
+            return false;
+        }
+
+        function handleDragEnd(e) {
+            // Clean up
+            if (this.classList) {
+                this.classList.remove('dragging');
+            }
+            
+            // Remove any remaining visual feedback
+            document.querySelectorAll('.app-item').forEach(item => {
+                item.style.borderTop = '';
+            });
+            
+            draggedElement = null;
+            draggedIndex = -1;
+        }
+
+        // ===== HELPER FUNCTIONS =====
+
+        // Get App Icon Based on Name
+        function getAppIcon(appName) {
+            const name = appName.toLowerCase();
+            
+            // Streaming services
+            if (name.includes('netflix')) return '🔴';
+            if (name.includes('youtube')) return '📹';
+            if (name.includes('prime') || name.includes('amazon')) return '📦';
+            if (name.includes('hulu')) return '🟢';
+            if (name.includes('disney')) return '🏰';
+            if (name.includes('hbo') || name.includes('max')) return '🎬';
+            if (name.includes('apple')) return '🍎';
+            if (name.includes('paramount')) return '⭐';
+            if (name.includes('peacock')) return '🦚';
+            if (name.includes('tubi')) return '🎭';
+            if (name.includes('pluto')) return '🪐';
+            if (name.includes('crackle')) return '💥';
+            if (name.includes('starz')) return '⭐';
+            if (name.includes('showtime')) return '🎪';
+            if (name.includes('sling')) return '📡';
+            if (name.includes('directv')) return '📺';
+            if (name.includes('spectrum')) return '🌈';
+            
+            // Music services
+            if (name.includes('spotify')) return '🎵';
+            if (name.includes('pandora')) return '🎶';
+            
+            // Content types
+            if (name.includes('plex')) return '🎬';
+            if (name.includes('emby')) return '📼';
+            if (name.includes('jellyfin')) return '🙌';
+            if (name.includes('kodi')) return '📺';
+            
+            // Kids content
+            if (name.includes('kids') || name.includes('pbs')) return '👶';
+            
+            // Sports
+            if (name.includes('espn')) return '⚽';
+            if (name.includes('nfl')) return '🏈';
+            if (name.includes('mlb')) return '⚾';
+            if (name.includes('nba')) return '🏀';
+            
+            // News
+            if (name.includes('cnn') || name.includes('fox') || name.includes('news')) return '📰';
+            
+            // Roku specific
+            if (name.includes('roku')) return '📱';
+            
+            // Generic categories
+            if (name.includes('photo')) return '📸';
+            if (name.includes('music')) return '🎵';
+            if (name.includes('game')) return '🎮';
+            if (name.includes('weather')) return '🌤️';
+            
+            return '📺'; // Default icon
+        }
+
+        // Load Example Apps
+        function loadExampleApps() {
+            const xmlString = `<?xml version="1.0" encoding="UTF-8" ?>
+        <apps>
+            <app id="tvinput.hdmi1" type="tvin" version="1.0.0">Cable box</app>
+            <app id="tvinput.hdmi2" type="tvin" version="1.0.0">PC</app>
+            <app id="tvinput.hdmi3" type="tvin" version="1.0.0">GTV</app>
+            <app id="tvinput.cvbs" type="tvin" version="1.0.0">AV</app>
+            <app id="tvinput.dtv" type="tvin" version="1.0.0">Live TV</app>
+            <app id="12" type="appl" version="5.1.130079003">Netflix</app>
+            <app id="31440" type="appl" version="9.12.20250812">Paramount Plus</app>
+            <app id="291097" type="appl" version="1.53.2025072100">Disney Plus</app>
+            <app id="61322" type="appl" version="59.3.0">HBO Max</app>
+            <app id="2285" type="appl" version="6.98.2">Hulu</app>
+            <app id="13" type="appl" version="15.4.2025052909">Prime Video</app>
+            <app id="837" type="appl" version="2.20.110005163">YouTube</app>
+            <app id="259656" type="appl" version="1.8.0">Web Video Caster - Receiver</app>
+            <app id="2213" type="appl" version="5.5.13">Roku Media Player</app>
+            <app id="23333" type="appl" version="6.6.1">PBS KIDS</app>
+            <app id="151908" type="appl" version="13.10.5">The Roku Channel</app>
+            <app id="74519" type="appl" version="5.43.9">Pluto TV - Free Movies/Shows</app>
+            <app id="13535" type="appl" version="7.36.20">Plex - Free Movies & TV</app>
+            <app id="593099" type="appl" version="6.8.21">Peacock TV</app>
+            <app id="551012" type="appl" version="15.3.17">Apple TV</app>
+            <app id="28" type="appl" version="7.4.9">Pandora</app>
+            <app id="22297" type="appl" version="2.11.67">Spotify Music</app>
+        </apps>`;
+            
+            const apps = parseAppsXML(xmlString);
+            allApps = apps;
+            renderAppsInDrawer(apps);
+        }
+
+        // ===== INITIALIZATION =====
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load example apps on startup
+            loadExampleApps();
+            
+            // Close drawer when clicking overlay
+            const overlay = document.getElementById('drawer-overlay');
+            if (overlay) {
+                overlay.addEventListener('click', closeDrawer);
+            }
+            
+            // Handle keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Escape key closes drawer
+                if (e.key === 'Escape') {
+                    closeDrawer();
+                    hideXMLPasteDialog();
+                }
+                
+                // Ctrl/Cmd + D opens drawer (if apps are loaded)
+                if ((e.ctrlKey || e.metaKey) && e.key === 'd' && allApps.length > 0) {
+                    e.preventDefault();
+                    openDrawer();
+                }
+            });
+            
+            // Auto-connect if IP is pre-filled
+            if (ipInput.value.trim()) {
+                rokuIP = ipInput.value.trim();
+                updateStatus('Connected', 'success');
+            }
+        });
+    </script>
 </body>
 </html>
