@@ -1,1491 +1,1329 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roku Remote Control</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            min-height: 100vh;
-            padding: 10px;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-        }
-
-        .remote {
-            width: 100%;
-            max-width: 280px;
-            min-width: 200px;
-            background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
-            border-radius: 25px;
-            padding: 25px 20px;
-            box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1),
-                inset 0 -1px 0 rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .remote::before {
-            content: '';
-            position: absolute;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 2px;
-        }
-
-        .top-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 15px 0 25px 0;
-        }
-
-        .brand {
-            font-size: 18px;
-            font-weight: bold;
-            color: #8b5cf6;
-            text-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
-        }
-
-        .ip-section {
-            margin-bottom: 25px;
-            text-align: center;
-        }
-
-        .ip-input {
-            margin-bottom: 10px;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        input[type="text"]::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .status {
-            font-size: 10px;
-            opacity: 0.8;
-            min-height: 15px;
-        }
-
-        .status.success { color: #10b981; }
-        .status.error { color: #ef4444; }
-
-        /* Remote Sections */
-        .section {
-            margin-bottom: 25px;
-        }
-
-        .section:last-child {
-            margin-bottom: 0;
-        }
-
-        /* Power Button */
-        .power-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #dc2626, #991b1b);
-            border: none;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            box-shadow: 
-                0 4px 8px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            transition: all 0.15s ease;
-        }
-
-        .power-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-        }
-
-        .power-btn:active {
-            transform: translateY(0);
-        }
-
-        /* D-Pad Navigation */
-        .dpad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            gap: 4px;
-            width: 140px;
-            height: 140px;
-            margin: 0 auto 25px auto;
-            position: relative;
-        }
-
-        .dpad::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(145deg, #404040, #2a2a2a);
-            border-radius: 50%;
-            z-index: -1;
-        }
-
-        .dpad-btn {
-            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
-            border: none;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            box-shadow: 
-                0 2px 4px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-
-        .dpad-btn:hover {
-            background: linear-gradient(145deg, #4a4a4a, #3a3a3a);
-        }
-
-        .dpad-btn:active {
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-up { grid-column: 2; border-radius: 10px 10px 4px 4px; }
-        .btn-left { grid-column: 1; grid-row: 2; border-radius: 10px 4px 4px 10px; }
-        .btn-ok { 
-            grid-column: 2; 
-            grid-row: 2; 
-            background: linear-gradient(145deg, #8b5cf6, #7c3aed);
-            border-radius: 50%;
-            font-weight: bold;
-            font-size: 16px;
-        }
-        .btn-right { grid-column: 3; grid-row: 2; border-radius: 4px 10px 10px 4px; }
-        .btn-down { grid-column: 2; grid-row: 3; border-radius: 4px 4px 10px 10px; }
-
-        /* Volume Controls */
-        .volume-controls {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 8px;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .vol-btn {
-            padding: 12px;
-            background: linear-gradient(145deg, #1f2937, #111827);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            box-shadow: 
-                0 2px 4px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-
-        .vol-btn:hover {
-            background: linear-gradient(145deg, #374151, #1f2937);
-        }
-
-        .mute-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #dc2626, #991b1b);
-            border: none;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-
-        /* Media Controls */
-        .media-controls {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-bottom: 25px;
-        }
-
-        .media-btn {
-            padding: 6px 8px;
-            background: linear-gradient(145deg, #374151, #1f2937);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            box-shadow: 
-                0 2px 4px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            height: 36px;
-        }
-
-        .media-btn:hover {
-            background: linear-gradient(145deg, #4b5563, #374151);
-            transform: translateY(-1px);
-        }
-
-        .media-btn:active {
-            transform: translateY(0);
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Home and Back buttons */
-        .nav-controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-
-        .nav-btn {
-            padding: 12px;
-            background: linear-gradient(145deg, #059669, #047857);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            box-shadow: 
-                0 2px 4px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        }
-
-        .nav-btn:hover {
-            background: linear-gradient(145deg, #10b981, #059669);
-            transform: translateY(-1px);
-        }
-
-        /* App Grid */
-        .app-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .app-btn {
-            padding: 10px 6px;
-            background: linear-gradient(145deg, #1e40af, #1e3a8a);
-            border: none;
-            border-radius: 6px;
-            color: white;
-            font-size: 10px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            box-shadow: 
-                0 2px 4px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        }
-
-        .app-btn:hover {
-            background: linear-gradient(145deg, #2563eb, #1e40af);
-            transform: translateY(-1px);
-        }
-
-        .app-btn:active {
-            transform: translateY(0);
-        }
-
-        /* Open Drawer Button */
-        .open-drawer-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(145deg, #8b5cf6, #7c3aed);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            box-shadow: 
-                0 2px 4px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            margin-top: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .open-drawer-btn:hover {
-            background: linear-gradient(145deg, #a855f7, #8b5cf6);
-            transform: translateY(-1px);
-        }
-
-        /* BOTTOM DRAWER STYLES */
-        .apps-drawer {
-            position: fixed;
-            bottom: -100vh;
-            left: 0;
-            right: 0;
-            height: 60vh;
-            background: linear-gradient(145deg, #1f1f1f, #0f0f0f);
-            border-radius: 20px 20px 0 0;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-bottom: none;
-            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
-            transition: bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .apps-drawer.open {
-            bottom: 0;
-        }
-
-        .drawer-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            z-index: 999;
-        }
-
-        .drawer-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .drawer-header {
-            padding: 20px 20px 15px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-        }
-
-        .drawer-handle {
-            position: absolute;
-            top: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 2px;
-        }
-
-        .drawer-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #8b5cf6;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .close-drawer-btn {
-            background: none;
-            border: none;
-            color: #ef4444;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 4px;
-            transition: all 0.15s ease;
-        }
-
-        .close-drawer-btn:hover {
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        .drawer-controls {
-            padding: 0 20px 15px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-
-        .drawer-btn {
-            flex: 1;
-            padding: 8px 12px;
-            background: linear-gradient(145deg, #1e40af, #1e3a8a);
-            border: none;
-            border-radius: 6px;
-            color: white;
-            font-size: 10px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            box-shadow: 
-                0 2px 4px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        }
-
-        .drawer-btn.secondary {
-            background: linear-gradient(145deg, #7c2d12, #92400e);
-        }
-
-        .drawer-btn:hover {
-            transform: translateY(-1px);
-            background: linear-gradient(145deg, #2563eb, #1e40af);
-        }
-
-        .drawer-btn.secondary:hover {
-            background: linear-gradient(145deg, #c2410c, #ea580c);
-        }
-
-        .cors-help {
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.7);
-            text-align: center;
-            margin: 0 20px 15px 20px;
-            line-height: 1.3;
-            padding: 10px;
-            background: rgba(239, 68, 68, 0.1);
-            border-radius: 6px;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            flex-shrink: 0;
-        }
-
-        .sort-controls {
-            padding: 15px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-shrink: 0;
-        }
-
-        .sort-label {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.7);
-            margin-right: 10px;
-        }
-
-        .sort-btn {
-            padding: 6px 10px;
-            background: linear-gradient(145deg, #374151, #1f2937);
-            border: none;
-            border-radius: 4px;
-            color: white;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            box-shadow: 
-                0 1px 3px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-
-        .sort-btn.active {
-            background: linear-gradient(145deg, #8b5cf6, #7c3aed);
-            color: white;
-        }
-
-        .sort-btn:hover {
-            background: linear-gradient(145deg, #4b5563, #374151);
-            transform: translateY(-1px);
-        }
-
-        .sort-btn.active:hover {
-            background: linear-gradient(145deg, #a855f7, #8b5cf6);
-        }
-
-        .drawer-apps-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px 20px 20px 20px;
-            overscroll-behavior: contain;
-        }
-
-        .app-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            margin: 4px 0;
-            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: all 0.15s ease;
-            position: relative;
-        }
-
-        .app-item:hover {
-            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .app-item.tv-input {
-            background: linear-gradient(145deg, #0f5132, #0d4228);
-            border-color: rgba(16, 185, 129, 0.3);
-        }
-
-        .app-item.tv-input:hover {
-            background: linear-gradient(145deg, #16a085, #0f5132);
-        }
-
-        .app-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            background: linear-gradient(145deg, #8b5cf6, #7c3aed);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            margin-right: 12px;
-            flex-shrink: 0;
-        }
-
-        .app-item.tv-input .app-icon {
-            background: linear-gradient(145deg, #10b981, #059669);
-        }
-
-        .app-details {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .app-name {
-            font-size: 13px;
-            font-weight: 500;
-            color: white;
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .app-id {
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.5);
-            font-family: monospace;
-        }
-
-        .app-launch-btn {
-            padding: 6px 12px;
-            background: linear-gradient(145deg, #1e40af, #1e3a8a);
-            border: none;
-            border-radius: 4px;
-            color: white;
-            font-size: 10px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            margin-left: 10px;
-            flex-shrink: 0;
-        }
-
-        .app-launch-btn:hover {
-            background: linear-gradient(145deg, #2563eb, #1e40af);
-            transform: translateY(-1px);
-        }
-
-        /* Manual sorting controls */
-        .manual-sort-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            margin-left: 8px;
-        }
-
-        .sort-control-btn {
-            width: 24px;
-            height: 20px;
-            background: linear-gradient(145deg, #374151, #1f2937);
-            border: none;
-            border-radius: 3px;
-            color: white;
-            font-size: 10px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .sort-control-btn:hover:not(:disabled) {
-            background: linear-gradient(145deg, #4b5563, #374151);
-            transform: scale(1.1);
-        }
-
-        .sort-control-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .app-item[draggable="true"] {
-            cursor: grab;
-        }
-
-        .app-item[draggable="true"]:active {
-            cursor: grabbing;
-        }
-
-        .app-item.dragging {
-            opacity: 0.5;
-            transform: rotate(2deg);
-        }
-
-        /* XML Dialog */
-        .xml-dialog {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1100;
-        }
-
-        .xml-dialog-content {
-            background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
-            border-radius: 15px;
-            padding: 20px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 80vh;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .xml-dialog-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            color: white;
-        }
-
-        .xml-dialog-header h3 {
-            margin: 0;
-            font-size: 16px;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            color: #ef4444;
-            font-size: 16px;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        .xml-dialog-body {
-            margin-bottom: 20px;
-        }
-
-        .xml-dialog-body p {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        #xml-input {
-            width: 100%;
-            height: 200px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            padding: 10px;
-            color: white;
-            font-family: monospace;
-            font-size: 12px;
-            resize: vertical;
-        }
-
-        .xml-dialog-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .dialog-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.15s ease;
-        }
-
-        .cancel-btn {
-            background: linear-gradient(145deg, #6b7280, #4b5563);
-            color: white;
-        }
-
-        .load-btn {
-            background: linear-gradient(145deg, #059669, #047857);
-            color: white;
-        }
-
-        .dialog-btn:hover {
-            transform: translateY(-1px);
-        }
-
-        /* Scrollbar styling */
-        .drawer-apps-list::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .drawer-apps-list::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 3px;
-        }
-
-        .drawer-apps-list::-webkit-scrollbar-thumb {
-            background: rgba(139, 92, 246, 0.5);
-            border-radius: 3px;
-        }
-
-        .drawer-apps-list::-webkit-scrollbar-thumb:hover {
-            background: rgba(139, 92, 246, 0.7);
-        }
-
-        /* Responsive */
-        @media (max-width: 480px) {
-            .remote {
-                max-width: 100%;
-                margin: 5px 5px 20px 5px;
-                padding: 20px 15px;
-            }
-            
-            body {
-                align-items: center;
-                padding: 5px;
-            }
-            
-            .dpad {
-                width: 120px;
-                height: 120px;
-            }
-            
-            .brand {
-                font-size: 16px;
-            }
-            
-            .apps-drawer {
-                height: 70vh;
-            }
-        }
-
-        @media (max-width: 320px) {
-            .remote {
-                min-width: 180px;
-                padding: 15px 10px;
-            }
-            
-            .dpad {
-                width: 110px;
-                height: 110px;
-            }
-            
-            .app-btn {
-                padding: 8px 4px;
-                font-size: 9px;
-            }
-            
-            .media-btn {
-                padding: 6px 6px;
-                font-size: 14px;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FREEFLOW</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #e63946;
+    --red-dim: #7a1d22;
+    --bg: #080808;
+    --surface: #111;
+    --surface2: #181818;
+    --border: #222;
+    --text: #e8e4dc;
+    --muted: #666;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  html {
+    font-size: 200%;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    overflow: hidden;
+  }
+
+  /* ── APP SHELL ── */
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    height: 52px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    z-index: 50;
+  }
+
+  .logo {
+    font-family: var(--font-display);
+    font-size: 26px;
+    letter-spacing: 0.05em;
+    color: var(--red);
+    flex-shrink: 0;
+  }
+
+  .tab-group {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .tab {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--red);
+    border-color: var(--red-dim);
+    background: rgba(230,57,70,0.08);
+  }
+
+  .search-wrap {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    max-width: 400px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .search-wrap svg { flex-shrink: 0; opacity: 0.4; }
+
+  .search-wrap input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 13px;
+    width: 100%;
+    padding: 8px 0;
+  }
+  .search-wrap input::placeholder { color: var(--muted); }
+
+  .tt-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+  }
+
+  .tt-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    padding: 6px 10px;
+    width: 120px;
+    outline: none;
+  }
+  .tt-input::placeholder { color: var(--muted); }
+  .tt-input:focus { border-color: var(--red-dim); }
+
+  .btn {
+    background: var(--red);
+    border: none;
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-ghost {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-size: 11px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-ghost:hover { border-color: var(--red-dim); color: var(--red); }
+  .btn-ghost:disabled { opacity: 0.25; pointer-events: none; }
+
+  /* ── HISTORY / BREADCRUMB ── */
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 20px;
+    height: 34px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px 6px;
+    font-size: 14px;
+    line-height: 1;
+    transition: color 0.15s;
+    flex-shrink: 0;
+  }
+  .nav-btn:hover { color: var(--text); }
+  .nav-btn:disabled { opacity: 0.2; pointer-events: none; }
+
+  .nav-sep { color: #333; font-size: 12px; flex-shrink: 0; }
+
+  .breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .crumb {
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: color 0.15s;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  .crumb:hover { color: var(--red); }
+  .crumb.current { color: var(--text); cursor: default; pointer-events: none; flex-shrink: 0; }
+  .crumb-sep { color: #333; font-size: 10px; flex-shrink: 0; }
+
+  /* ── MAIN ── */
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── BROWSE PANEL ── */
+  .browse-panel {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding: 20px;
+    display: none;
+  }
+  .browse-panel.visible { display: block; }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(8em, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .card {
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: var(--red-dim);
+  }
+
+  .card:hover .card-overlay { opacity: 1; }
+
+  .card-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.5) 70%, transparent 100%);
+    padding: 28px 6px 6px;
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .card-action {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 7px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+    font-family: var(--font-body);
+  }
+  .card-action:hover { background: rgba(255,255,255,0.18); }
+  .card-action.in-list { background: rgba(230,57,70,0.3); border-color: var(--red-dim); color: var(--red); }
+  .card-action.watched { background: rgba(76,175,80,0.25); border-color: #1a3a1a; color: #4caf50; }
+
+  .card-watched-badge {
+    position: absolute;
+    bottom: 38px; right: 6px;
+    font-size: 8px;
+    color: #4caf50;
+    background: rgba(0,0,0,0.75);
+    border: 1px solid #1a3a1a;
+    padding: 2px 5px;
+    pointer-events: none;
+    display: none;
+  }
+  .card.is-watched .card-watched-badge { display: block; }
+
+  .card img {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    display: block;
+    filter: brightness(0.9);
+  }
+
+  .card-info {
+    padding: 8px;
+  }
+
+  .card-title {
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text);
+  }
+
+  .card-meta {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .card-type-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 5px;
+    background: rgba(0,0,0,0.75);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .card-type-badge.tv { color: #4fc3f7; border-color: #1a4a5a; }
+
+  .no-poster {
+    width: 100%;
+    aspect-ratio: 2/3;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  /* ── PLAYER PANEL ── */
+  .player-panel {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .player-panel.visible { display: flex; }
+
+  /* THE KEY FIX: iframe container uses position relative + padding trick,
+     AND the iframe itself gets allowfullscreen properly */
+  .player-container {
+    position: relative;
+    flex: 1;
+    background: #000;
+    overflow: hidden;
+  }
+
+  .player-container iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .player-meta {
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 14px 20px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+
+  .player-poster {
+    width: 56px;
+    height: 84px;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .player-details { flex: 1; }
+
+  .player-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+
+  .player-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .ptag {
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 2px 7px;
+  }
+  .ptag.red { color: var(--red); border-color: var(--red-dim); }
+
+  .player-plot {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    max-width: 700px;
+  }
+
+  .player-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-end;
+    flex-shrink: 0;
+  }
+
+  /* ── EPISODE SELECTOR (TV) ── */
+  .episode-bar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .episode-bar.visible { display: flex; }
+  .episode-bar label { font-size: 12px; color: var(--muted); }
+  .episode-bar select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 12px;
+    padding: 4px 8px;
+    outline: none;
+    cursor: pointer;
+  }
+  .episode-bar select:focus { border-color: var(--red-dim); }
+
+  /* ── LOADING / EMPTY ── */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+  }
+
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-right: 10px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .key-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-left: 1px solid var(--border);
+    padding-left: 12px;
+    flex-shrink: 0;
+  }
+
+  .key-wrap.saved .key-dot {
+    background: #4caf50;
+  }
+
+  .key-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  /* ── WATCHLIST DRAWER ── */
+  .wl-drawer {
+    position: fixed;
+    top: 0; right: -360px;
+    width: 360px;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.25s cubic-bezier(.4,0,.2,1);
+  }
+  .wl-drawer.open { right: 0; }
+
+  .wl-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 199;
+  }
+  .wl-overlay.open { display: block; }
+
+  .wl-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .wl-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    letter-spacing: 0.05em;
+    color: var(--text);
+  }
+
+  .wl-count {
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 2px 7px;
+    margin-left: 8px;
+  }
+
+  .wl-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 6px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .wl-close:hover { color: var(--red); }
+
+  .wl-actions {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .wl-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+
+  .wl-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--muted);
+    font-size: 12px;
+    gap: 8px;
+    opacity: 0.5;
+  }
+
+  .wl-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    border-bottom: 1px solid #1a1a1a;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .wl-item:hover { background: var(--surface2); }
+
+  .wl-item-poster {
+    width: 32px;
+    height: 48px;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+    background: var(--surface2);
+  }
+
+  .wl-item-info { flex: 1; min-width: 0; }
+
+  .wl-item-title {
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text);
+  }
+
+  .wl-item-meta {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .watched-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #4caf50;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+
+  .wl-item-remove {
+    background: none;
+    border: none;
+    color: #333;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+  .wl-item-remove:hover { color: var(--red); }
+
+  .wl-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .wl-btn:hover { border-color: var(--red-dim); color: var(--red); }
+
+  .list-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--red);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 9px;
+    width: 14px;
+    height: 14px;
+    margin-left: 4px;
+    font-weight: 600;
+    vertical-align: middle;
+    line-height: 1;
+  }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: #444; }
+</style>
 </head>
 <body>
-    <div class="remote">
-        <div class="top-section">
-            <button class="power-btn" onclick="sendCommand('PowerOff')">⚡</button>
-            <div class="brand">ROKU</div>
-            <div></div>
-        </div>
-        
-        <div class="ip-section">
-            <div class="ip-input">
-                <input type="text" id="rokuIP" placeholder="192.168.1.100" value="192.168.0.190">
-            </div>
-            <div class="status" id="status">Enter IP address</div>
-        </div>
-        
-        <div class="nav-controls">
-            <button class="nav-btn" onclick="sendCommand('Home')">🏠 HOME</button>
-            <button class="nav-btn" onclick="sendCommand('Back')">⬅️ BACK</button>
-        </div>
-        
-        <div class="dpad">
-            <div></div>
-            <button class="dpad-btn btn-up" onclick="sendCommand('Up')">⬆️</button>
-            <div></div>
-            <button class="dpad-btn btn-left" onclick="sendCommand('Left')">⬅️</button>
-            <button class="dpad-btn btn-ok" onclick="sendCommand('Select')">OK</button>
-            <button class="dpad-btn btn-right" onclick="sendCommand('Right')">➡️</button>
-            <div></div>
-            <button class="dpad-btn btn-down" onclick="sendCommand('Down')">⬇️</button>
-            <div></div>
-        </div>
-        
-        <div class="volume-controls">
-            <button class="vol-btn" onclick="sendCommand('VolumeDown')">🔉 VOL -</button>
-            <button class="mute-btn" onclick="sendCommand('VolumeMute')">🔇</button>
-            <button class="vol-btn" onclick="sendCommand('VolumeUp')">🔊 VOL +</button>
-        </div>
-        
-        <div class="media-controls">
-            <button class="media-btn" onclick="sendCommand('Rev')">⏪</button>
-            <button class="media-btn" onclick="sendCommand('Play')">▶️</button>
-            <button class="media-btn" onclick="sendCommand('Pause')">⏸️</button>
-            <button class="media-btn" onclick="sendCommand('Fwd')">⏩</button>
-        </div>
-        
-        <div class="section">
-            <div class="app-grid">
-                <button class="app-btn" onclick="launchApp('12')">📺<br>Netflix</button>
-                <button class="app-btn" onclick="launchApp('837')">📹<br>YouTube</button>
-                <button class="app-btn" onclick="launchApp('13')">📦<br>Prime</button>
-                <button class="app-btn" onclick="launchApp('2285')">🟢<br>Hulu</button>
-                <button class="app-btn" onclick="launchApp('291097')">🏰<br>Disney+</button>
-                <button class="app-btn" onclick="launchApp('61322')">🎬<br>HBO Max</button>
-                <button class="app-btn" onclick="sendCommand('Search')">🔍<br>Search</button>
-                <button class="app-btn" onclick="sendCommand('Info')">ℹ️<br>Info</button>
-                <button class="app-btn" onclick="sendCommand('InstantReplay')">↩️<br>Replay</button>
-            </div>
-            
-            <button class="open-drawer-btn" onclick="openDrawer()">
-                📱 All Apps
-                <span style="font-size: 12px;">↑</span>
-            </button>
-        </div>
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">FREEFLOW</div>
+
+    <div class="tab-group">
+      <button class="tab active" data-tab="trending">Trending</button>
+      <button class="tab" data-tab="movies">Movies</button>
+      <button class="tab" data-tab="tv">TV Shows</button>
     </div>
 
-    <!-- Apps Drawer -->
-    <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
-    <div id="apps-drawer" class="apps-drawer">
-        <div class="drawer-handle"></div>
-        
-        <div class="drawer-header">
-            <div class="drawer-title">
-                📱 All Apps
-            </div>
-            <button class="close-drawer-btn" onclick="closeDrawer()">✕</button>
-        </div>
-        
-        <div class="drawer-controls">
-            <button class="drawer-btn" onclick="loadInstalledApps()">🔄 Refresh</button>
-            <button class="drawer-btn secondary" onclick="openAppsXML()">📋 Manual</button>
-        </div>
-        
-        <div class="cors-help">
-            📡 Due to browser security, apps may not load automatically.<br>
-            Use "Manual" button if "Refresh" fails.
-        </div>
-        
-        <div class="sort-controls">
-            <span class="sort-label">Sort:</span>
-            <button class="sort-btn active" data-sort="name" onclick="setSortMode('name')">A-Z</button>
-            <button class="sort-btn" data-sort="type" onclick="setSortMode('type')">Type</button>
-            <button class="sort-btn" data-sort="manual" onclick="setSortMode('manual')">Manual</button>
-        </div>
-        
-        <div class="drawer-apps-list" id="drawer-apps-list">
-            <!-- Apps will be populated here -->
-        </div>
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input id="searchInput" type="text" placeholder="Search movies & TV..." autocomplete="off">
     </div>
 
-    <!-- XML Paste Dialog -->
-    <div id="xml-dialog" class="xml-dialog">
-        <div class="xml-dialog-content">
-            <div class="xml-dialog-header">
-                <h3>Paste Apps XML</h3>
-                <button class="close-btn" onclick="hideXMLPasteDialog()">✕</button>
-            </div>
-            <div class="xml-dialog-body">
-                <p>Copy XML from the opened window and paste here:</p>
-                <textarea id="xml-input" placeholder="<?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?>&#10;<apps>&#10;  <app id=&quot;12&quot; type=&quot;appl&quot;>Netflix</app>&#10;  ...&#10;</apps>"></textarea>
-            </div>
-            <div class="xml-dialog-footer">
-                <button class="dialog-btn cancel-btn" onclick="hideXMLPasteDialog()">Cancel</button>
-                <button class="dialog-btn load-btn" onclick="loadPastedXML()">Load Apps</button>
-            </div>
-        </div>
+    <div class="tt-wrap">
+      <input id="ttInput" class="tt-input" type="text" placeholder="tt0052077" maxlength="20">
+      <button class="btn" id="ttBtn">PLAY</button>
     </div>
 
-    <script>
-        // Enhanced Roku Remote with Bottom Drawer - COMPLETE VERSION
-        let rokuIP = '';
-        let allApps = [];
-        let currentSortMode = 'name'; // 'name', 'type', 'manual'
-        const statusEl = document.getElementById('status');
-        const ipInput = document.getElementById('rokuIP');
+    <div class="key-wrap" title="OMDB API Key">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.4;flex-shrink:0"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+      <input id="keyInput" class="tt-input" type="password" placeholder="OMDB key" style="width:90px">
+      <button class="btn-ghost" id="keyBtn">SET</button>
+      <span class="key-dot" id="keyDot" title="No key set"></span>
+    </div>
 
-        // IP Input Handler
-        ipInput.addEventListener('input', function(e) {
-            rokuIP = e.target.value.trim();
-            if (rokuIP) {
-                updateStatus('Connected', 'success');
-            } else {
-                updateStatus('Enter IP address');
-            }
-        });
+    <button class="btn-ghost" id="wlOpenBtn" style="border-left:1px solid var(--border);padding-left:14px;margin-left:2px;border-radius:0;border-top:none;border-bottom:none;border-right:none;">
+      ☰ LIST <span class="list-badge" id="wlBadge" style="display:none">0</span>
+    </button>
+  </header>
 
-        // Status Update Function
-        function updateStatus(message, type = '') {
-            statusEl.textContent = message;
-            statusEl.className = 'status ' + type;
-            
-            if (type) {
-                setTimeout(() => {
-                    statusEl.className = 'status';
-                    statusEl.textContent = rokuIP ? 'Connected' : 'Enter IP address';
-                }, 2000);
-            }
-        }
+  <!-- WATCHLIST DRAWER -->
+  <div class="wl-overlay" id="wlOverlay"></div>
+  <div class="wl-drawer" id="wlDrawer">
+    <div class="wl-header">
+      <div style="display:flex;align-items:center">
+        <span class="wl-title">WATCHLIST</span>
+        <span class="wl-count" id="wlCount">0 titles</span>
+      </div>
+      <button class="wl-close" id="wlCloseBtn">✕</button>
+    </div>
+    <div class="wl-actions">
+      <button class="wl-btn" id="wlExportCSV">↓ CSV</button>
+      <button class="wl-btn" id="wlExportJSON">↓ JSON</button>
+      <button class="wl-btn" id="wlClearBtn" style="margin-left:auto;color:#555">CLEAR ALL</button>
+    </div>
+    <div class="wl-list" id="wlList">
+      <div class="wl-empty" id="wlEmpty">
+        <div style="font-size:24px">📋</div>
+        <div>Your list is empty</div>
+        <div style="font-size:10px">Add titles while watching</div>
+      </div>
+    </div>
+  </div>
 
-        // Send Remote Commands
-        async function sendCommand(command) {
-            if (!rokuIP) {
-                updateStatus('Enter IP first!', 'error');
-                return;
-            }
-            
-            const url = `http://${rokuIP}:8060/keypress/${command}`;
-            
-            try {
-                updateStatus(`${command}...`);
-                
-                await fetch(url, {
-                    method: 'POST',
-                    mode: 'no-cors'
-                });
-                
-                updateStatus(`✓ ${command}`, 'success');
-                
-            } catch (error) {
-                console.error('Error:', error);
-                updateStatus(`✗ Failed`, 'error');
-            }
-        }
+  <!-- NAV BAR -->
+  <div class="nav-bar">
+    <button class="nav-btn" id="navBack" title="Back" disabled>&#8592;</button>
+    <button class="nav-btn" id="navFwd" title="Forward" disabled>&#8594;</button>
+    <div class="nav-sep">|</div>
+    <div class="breadcrumbs" id="breadcrumbs"></div>
+  </div>
 
-        // Launch App Function
-        async function launchApp(appId) {
-            if (!rokuIP) {
-                updateStatus('Enter IP first!', 'error');
-                return;
-            }
-            
-            const url = `http://${rokuIP}:8060/launch/${appId}`;
-            
-            try {
-                updateStatus('Launching...');
-                
-                await fetch(url, {
-                    method: 'POST',
-                    mode: 'no-cors'
-                });
-                
-                updateStatus('✓ Launched', 'success');
-                
-                // Auto-close drawer after launching
-                setTimeout(() => {
-                    closeDrawer();
-                }, 1000);
-                
-            } catch (error) {
-                console.error('Error:', error);
-                updateStatus('✗ Failed', 'error');
-            }
-        }
+  <!-- MAIN -->
+  <main class="main">
 
-        // Load Apps from Roku (with CORS handling)
-        async function loadInstalledApps() {
-            if (!rokuIP) {
-                updateStatus('Enter IP first!', 'error');
-                return;
-            }
-            
-            const url = `http://${rokuIP}:8060/query/apps`;
-            
-            try {
-                updateStatus('Loading apps...');
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    mode: 'cors'
-                });
-                
-                if (response.ok) {
-                    const xmlText = await response.text();
-                    const apps = parseAppsXML(xmlText);
-                    allApps = apps;
-                    renderAppsInDrawer(apps);
-                    updateStatus(`✓ Loaded ${apps.length} apps`, 'success');
-                    
-                    // Open drawer if not already open
-                    if (!document.getElementById('apps-drawer').classList.contains('open')) {
-                        openDrawer();
-                    }
-                } else {
-                    throw new Error('Failed to fetch apps');
-                }
-                
-            } catch (error) {
-                console.error('CORS Error:', error);
-                updateStatus('CORS blocked - opening XML in new tab', 'error');
-                
-                window.open(url, '_blank');
-                
-                setTimeout(() => {
-                    updateStatus('Copy XML from new tab, then paste', 'error');
-                    showXMLPasteDialog();
-                }, 1000);
-            }
-        }
+    <!-- BROWSE -->
+    <div class="browse-panel visible" id="browsePanel">
+      <div id="browseContent"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+    </div>
 
-        // Open Apps XML in new tab
-        function openAppsXML() {
-            if (!rokuIP) {
-                updateStatus('Enter IP first!', 'error');
-                return;
-            }
-            
-            const url = `http://${rokuIP}:8060/query/apps`;
-            window.open(url, '_blank');
-            updateStatus('XML opened in new tab', 'success');
-            
-            setTimeout(() => {
-                showXMLPasteDialog();
-            }, 1000);
-        }
+    <!-- PLAYER -->
+    <div class="player-panel" id="playerPanel">
+      <div class="player-container">
+        <iframe id="playerIframe"
+          src=""
+          allowfullscreen="true"
+          webkitallowfullscreen="true"
+          mozallowfullscreen="true"
+          allow="autoplay; fullscreen; picture-in-picture"
+          frameborder="0"
+          scrolling="no">
+        </iframe>
+      </div>
 
-        // XML Dialog Functions
-        function showXMLPasteDialog() {
-            const dialog = document.getElementById('xml-dialog');
-            dialog.style.display = 'flex';
-        }
+      <div class="episode-bar" id="episodeBar">
+        <label>Season</label>
+        <select id="seasonSel"></select>
+        <label>Episode</label>
+        <select id="episodeSel"></select>
+        <button class="btn" id="epPlayBtn">PLAY EPISODE</button>
+      </div>
 
-        function hideXMLPasteDialog() {
-            const dialog = document.getElementById('xml-dialog');
-            dialog.style.display = 'none';
-            document.getElementById('xml-input').value = '';
-        }
+      <div class="player-meta">
+        <img id="playerPoster" class="player-poster" src="" alt="">
+        <div class="player-details">
+          <div class="player-title" id="playerTitle">—</div>
+          <div class="player-tags" id="playerTags"></div>
+          <div class="player-plot" id="playerPlot"></div>
+        </div>
+        <div class="player-actions">
+          <button class="btn-ghost" id="backBtn">← BROWSE</button>
+          <button class="btn-ghost" id="wlAddBtn">+ ADD TO LIST</button>
+          <button class="btn-ghost" id="fullscreenBtn">⛶ FULLSCREEN</button>
+        </div>
+      </div>
+    </div>
 
-        function loadPastedXML() {
-            const xmlInput = document.getElementById('xml-input');
-            const xmlText = xmlInput.value.trim();
-            
-            if (!xmlText) {
-                updateStatus('No XML provided', 'error');
-                return;
-            }
-            
-            try {
-                const apps = parseAppsXML(xmlText);
-                allApps = apps;
-                renderAppsInDrawer(apps);
-                updateStatus(`✓ Loaded ${apps.length} items`, 'success');
-                hideXMLPasteDialog();
-                openDrawer();
-            } catch (error) {
-                updateStatus('✗ Invalid XML', 'error');
-                console.error('XML Parse Error:', error);
-            }
-        }
+  </main>
+</div>
 
-        // Parse XML to App Objects
-        function parseAppsXML(xmlString) {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
-            const apps = xmlDoc.querySelectorAll('app');
-            
-            const appList = [];
-            apps.forEach((app, index) => {
-                const id = app.getAttribute('id');
-                const type = app.getAttribute('type');
-                const name = app.textContent;
-                
-                if (id && name) {
-                    appList.push({ 
-                        id, 
-                        name,
-                        type: type === 'tvin' ? 'input' : 'app',
-                        originalIndex: index,
-                        customOrder: index // For manual sorting
-                    });
-                }
-            });
-            
-            return appList;
-        }
+<script>
+const OMDB_KEY = 'trilogy'; // <-- replace with your OMDB key
 
-        // ===== DRAWER FUNCTIONS =====
+// ── Elements ──
+const browsePanel  = document.getElementById('browsePanel');
+const playerPanel  = document.getElementById('playerPanel');
+const browseContent= document.getElementById('browseContent');
+const playerIframe = document.getElementById('playerIframe');
+const playerTitle  = document.getElementById('playerTitle');
+const playerTags   = document.getElementById('playerTags');
+const playerPlot   = document.getElementById('playerPlot');
+const playerPoster = document.getElementById('playerPoster');
+const episodeBar   = document.getElementById('episodeBar');
+const seasonSel    = document.getElementById('seasonSel');
+const episodeSel   = document.getElementById('episodeSel');
+const searchInput  = document.getElementById('searchInput');
+const ttInput      = document.getElementById('ttInput');
+const navBackBtn   = document.getElementById('navBack');
+const navFwdBtn    = document.getElementById('navFwd');
+const breadcrumbs  = document.getElementById('breadcrumbs');
+const keyInput     = document.getElementById('keyInput');
+const keyDot       = document.getElementById('keyDot');
+const keyWrap      = document.querySelector('.key-wrap');
 
-        function openDrawer() {
-            const drawer = document.getElementById('apps-drawer');
-            const overlay = document.getElementById('drawer-overlay');
-            
-            drawer.classList.add('open');
-            overlay.classList.add('active');
-        }
+// ── API key management ──
+let omdbKey = localStorage.getItem('omdb_key') || OMDB_KEY;
 
-        function closeDrawer() {
-            const drawer = document.getElementById('apps-drawer');
-            const overlay = document.getElementById('drawer-overlay');
-            
-            drawer.classList.remove('open');
-            overlay.classList.remove('active');
-        }
+function updateKeyUI(valid) {
+  keyDot.style.background = valid ? '#4caf50' : '#666';
+  keyDot.title = valid ? 'Key active' : 'No key set';
+}
 
-        // Set Sort Mode
-        function setSortMode(mode) {
-            currentSortMode = mode;
-            
-            // Update active sort button
-            document.querySelectorAll('.sort-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector(`[data-sort="${mode}"]`)?.classList.add('active');
-            
-            // Re-render apps with new sorting
-            renderAppsInDrawer(allApps);
-        }
+// Restore saved key on load
+if (localStorage.getItem('omdb_key')) {
+  keyInput.value = localStorage.getItem('omdb_key');
+  updateKeyUI(true);
+}
 
-        // Sort Apps by Mode
-        function sortApps(apps, mode) {
-            const sortedApps = [...apps];
-            
-            switch (mode) {
-                case 'name':
-                    return sortedApps.sort((a, b) => a.name.localeCompare(b.name));
-                case 'type':
-                    return sortedApps.sort((a, b) => {
-                        if (a.type !== b.type) {
-                            return a.type === 'input' ? -1 : 1; // TV inputs first
-                        }
-                        return a.name.localeCompare(b.name);
-                    });
-                case 'manual':
-                    return sortedApps.sort((a, b) => a.customOrder - b.customOrder);
-                default:
-                    return sortedApps;
-            }
-        }
+document.getElementById('keyBtn').addEventListener('click', async () => {
+  const val = keyInput.value.trim();
+  if (!val) return;
+  // Quick validation ping
+  const test = await fetch(`https://www.omdbapi.com/?apikey=${val}&i=tt0052077`).then(r => r.json());
+  if (test.Response === 'True') {
+    omdbKey = val;
+    localStorage.setItem('omdb_key', val);
+    updateKeyUI(true);
+    loadBrowse(currentTab);
+  } else {
+    updateKeyUI(false);
+    keyDot.style.background = '#e63946';
+    keyDot.title = 'Invalid key';
+  }
+});
+keyInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('keyBtn').click(); });
 
-        // Render Apps in Drawer
-        function renderAppsInDrawer(apps) {
-            const container = document.getElementById('drawer-apps-list');
-            if (!container) return;
-            
-            const sortedApps = sortApps(apps, currentSortMode);
-            container.innerHTML = '';
-            
-            if (sortedApps.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
-                        <div style="font-size: 32px; margin-bottom: 10px;">📱</div>
-                        <div>No apps loaded yet</div>
-                        <div style="font-size: 12px; margin-top: 10px;">Click "Refresh" to load your Roku apps</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            sortedApps.forEach((app, index) => {
-                const appItem = document.createElement('div');
-                appItem.className = `app-item ${app.type === 'input' ? 'tv-input' : ''}`;
-                appItem.setAttribute('data-index', index);
-                appItem.setAttribute('data-app-id', app.id);
-                
-                if (currentSortMode === 'manual') {
-                    appItem.setAttribute('draggable', 'true');
-                }
-                
-                const icon = app.type === 'input' ? '📺' : getAppIcon(app.name);
-                
-                appItem.innerHTML = `
-                    <div class="app-icon">${icon}</div>
-                    <div class="app-details">
-                        <div class="app-name">${app.name}</div>
-                        <div class="app-id">ID: ${app.id}</div>
-                    </div>
-                    <button class="app-launch-btn" onclick="launchApp('${app.id}')">
-                        Launch
-                    </button>
-                    ${currentSortMode === 'manual' ? `
-                        <div class="manual-sort-controls">
-                            <button class="sort-control-btn" onclick="moveApp(${index}, -1)" ${index === 0 ? 'disabled' : ''}>
-                                ⬆️
-                            </button>
-                            <button class="sort-control-btn" onclick="moveApp(${index}, 1)" ${index === sortedApps.length - 1 ? 'disabled' : ''}>
-                                ⬇️
-                            </button>
-                        </div>
-                    ` : ''}
-                `;
-                
-                // Add drag and drop for manual sorting
-                if (currentSortMode === 'manual') {
-                    appItem.addEventListener('dragstart', handleDragStart);
-                    appItem.addEventListener('dragover', handleDragOver);
-                    appItem.addEventListener('drop', handleDrop);
-                    appItem.addEventListener('dragend', handleDragEnd);
-                }
-                
-                container.appendChild(appItem);
-            });
-        }
+// ── History stack ──
+// Each entry: { type: 'browse'|'search'|'player', tab?, query?, imdbId?, mediaType?, label }
+let history = [];
+let historyIdx = -1;
+let navigating = false; // flag to prevent pushState while replaying
 
-        // ===== MANUAL SORTING FUNCTIONS =====
+function pushHistory(entry) {
+  if (navigating) return;
+  // Drop any forward history when navigating to a new place
+  history = history.slice(0, historyIdx + 1);
+  history.push(entry);
+  historyIdx = history.length - 1;
+  updateNavUI();
+}
 
-        function moveApp(fromIndex, direction) {
-            const sortedApps = sortApps(allApps, currentSortMode);
-            const toIndex = fromIndex + direction;
-            
-            if (toIndex < 0 || toIndex >= sortedApps.length) return;
-            
-            // Find the apps in the original array and swap their customOrder
-            const fromApp = sortedApps[fromIndex];
-            const toApp = sortedApps[toIndex];
-            
-            // Swap custom order values
-            const tempOrder = fromApp.customOrder;
-            fromApp.customOrder = toApp.customOrder;
-            toApp.customOrder = tempOrder;
-            
-            // Re-render with updated order
-            renderAppsInDrawer(allApps);
-        }
+function updateNavUI() {
+  navBackBtn.disabled = historyIdx <= 0;
+  navFwdBtn.disabled  = historyIdx >= history.length - 1;
+  renderBreadcrumbs();
+}
 
-        // ===== DRAG AND DROP FUNCTIONALITY =====
+function renderBreadcrumbs() {
+  if (!history.length) { breadcrumbs.innerHTML = ''; return; }
+  // Show last 5 entries max
+  const start = Math.max(0, historyIdx - 4);
+  const visible = history.slice(start, historyIdx + 1);
+  breadcrumbs.innerHTML = visible.map((e, i) => {
+    const realIdx = start + i;
+    const isCurrent = realIdx === historyIdx;
+    const sep = i > 0 ? '<span class="crumb-sep">›</span>' : '';
+    return `${sep}<span class="crumb${isCurrent ? ' current' : ''}" data-idx="${realIdx}">${e.label}</span>`;
+  }).join('');
+  breadcrumbs.querySelectorAll('.crumb:not(.current)').forEach(el => {
+    el.addEventListener('click', () => goToHistoryIdx(parseInt(el.dataset.idx)));
+  });
+}
 
-        let draggedElement = null;
-        let draggedIndex = -1;
+async function goToHistoryIdx(idx) {
+  if (idx < 0 || idx >= history.length) return;
+  historyIdx = idx;
+  navigating = true;
+  await replayEntry(history[idx]);
+  navigating = false;
+  updateNavUI();
+}
 
-        function handleDragStart(e) {
-            draggedElement = this;
-            draggedIndex = parseInt(this.getAttribute('data-index'));
-            this.classList.add('dragging');
-            
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/html', '');
-        }
+async function replayEntry(entry) {
+  if (entry.type === 'browse') {
+    // Restore tab state
+    document.querySelectorAll('.tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.tab === entry.tab);
+    });
+    currentTab = entry.tab;
+    searchInput.value = '';
+    showBrowse();
+    await loadBrowse(entry.tab);
 
-        function handleDragOver(e) {
-            if (e.preventDefault) {
-                e.preventDefault();
-            }
-            
-            e.dataTransfer.dropEffect = 'move';
-            
-            // Visual feedback
-            this.style.borderTop = '2px solid #8b5cf6';
-            
-            return false;
-        }
+  } else if (entry.type === 'search') {
+    searchInput.value = entry.query;
+    showBrowse();
+    await execSearch(entry.query);
 
-        function handleDrop(e) {
-            if (e.stopPropagation) {
-                e.stopPropagation();
-            }
-            
-            // Remove visual feedback
-            this.style.borderTop = '';
-            
-            if (draggedElement !== this && draggedIndex !== -1) {
-                const targetIndex = parseInt(this.getAttribute('data-index'));
-                
-                // Get the sorted apps to find which ones we're swapping
-                const sortedApps = sortApps(allApps, currentSortMode);
-                const draggedApp = sortedApps[draggedIndex];
-                const targetApp = sortedApps[targetIndex];
-                
-                // Swap their custom order values
-                const tempOrder = draggedApp.customOrder;
-                draggedApp.customOrder = targetApp.customOrder;
-                targetApp.customOrder = tempOrder;
-                
-                // Re-render
-                renderAppsInDrawer(allApps);
-            }
-            
-            return false;
-        }
+  } else if (entry.type === 'player') {
+    showPlayer();
+    await execLoadPlayer(entry.imdbId, entry.mediaType);
+  }
+}
 
-        function handleDragEnd(e) {
-            // Clean up
-            if (this.classList) {
-                this.classList.remove('dragging');
-            }
-            
-            // Remove any remaining visual feedback
-            document.querySelectorAll('.app-item').forEach(item => {
-                item.style.borderTop = '';
-            });
-            
-            draggedElement = null;
-            draggedIndex = -1;
-        }
+// ── State ──
+let currentTab = 'trending';
+let searchTimer = null;
 
-        // ===== HELPER FUNCTIONS =====
+// ── Panel toggles ──
+function showBrowse() {
+  browsePanel.classList.add('visible');
+  playerPanel.classList.remove('visible');
+}
+function showPlayer() {
+  browsePanel.classList.remove('visible');
+  playerPanel.classList.add('visible');
+}
 
-        // Get App Icon Based on Name
-        function getAppIcon(appName) {
-            const name = appName.toLowerCase();
-            
-            // Streaming services
-            if (name.includes('netflix')) return '🔴';
-            if (name.includes('youtube')) return '📹';
-            if (name.includes('prime') || name.includes('amazon')) return '📦';
-            if (name.includes('hulu')) return '🟢';
-            if (name.includes('disney')) return '🏰';
-            if (name.includes('hbo') || name.includes('max')) return '🎬';
-            if (name.includes('apple')) return '🍎';
-            if (name.includes('paramount')) return '⭐';
-            if (name.includes('peacock')) return '🦚';
-            if (name.includes('tubi')) return '🎭';
-            if (name.includes('pluto')) return '🪐';
-            if (name.includes('crackle')) return '💥';
-            if (name.includes('starz')) return '⭐';
-            if (name.includes('showtime')) return '🎪';
-            if (name.includes('sling')) return '📡';
-            if (name.includes('directv')) return '📺';
-            if (name.includes('spectrum')) return '🌈';
-            
-            // Music services
-            if (name.includes('spotify')) return '🎵';
-            if (name.includes('pandora')) return '🎶';
-            
-            // Content types
-            if (name.includes('plex')) return '🎬';
-            if (name.includes('emby')) return '📼';
-            if (name.includes('jellyfin')) return '🙌';
-            if (name.includes('kodi')) return '📺';
-            
-            // Kids content
-            if (name.includes('kids') || name.includes('pbs')) return '👶';
-            
-            // Sports
-            if (name.includes('espn')) return '⚽';
-            if (name.includes('nfl')) return '🏈';
-            if (name.includes('mlb')) return '⚾';
-            if (name.includes('nba')) return '🏀';
-            
-            // News
-            if (name.includes('cnn') || name.includes('fox') || name.includes('news')) return '📰';
-            
-            // Roku specific
-            if (name.includes('roku')) return '📱';
-            
-            // Generic categories
-            if (name.includes('photo')) return '📸';
-            if (name.includes('music')) return '🎵';
-            if (name.includes('game')) return '🎮';
-            if (name.includes('weather')) return '🌤️';
-            
-            return '📺'; // Default icon
-        }
+// ── OMDB fetch ──
+async function omdb(params) {
+  const url = new URL('https://www.omdbapi.com/');
+  url.searchParams.set('apikey', omdbKey);
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  const r = await fetch(url);
+  return r.json();
+}
 
-        // Load Example Apps
-        function loadExampleApps() {
-            const xmlString = `<?xml version="1.0" encoding="UTF-8" ?>
-        <apps>
-            <app id="tvinput.hdmi1" type="tvin" version="1.0.0">Cable box</app>
-            <app id="tvinput.hdmi2" type="tvin" version="1.0.0">PC</app>
-            <app id="tvinput.hdmi3" type="tvin" version="1.0.0">GTV</app>
-            <app id="tvinput.cvbs" type="tvin" version="1.0.0">AV</app>
-            <app id="tvinput.dtv" type="tvin" version="1.0.0">Live TV</app>
-            <app id="12" type="appl" version="5.1.130079003">Netflix</app>
-            <app id="31440" type="appl" version="9.12.20250812">Paramount Plus</app>
-            <app id="291097" type="appl" version="1.53.2025072100">Disney Plus</app>
-            <app id="61322" type="appl" version="59.3.0">HBO Max</app>
-            <app id="2285" type="appl" version="6.98.2">Hulu</app>
-            <app id="13" type="appl" version="15.4.2025052909">Prime Video</app>
-            <app id="837" type="appl" version="2.20.110005163">YouTube</app>
-            <app id="259656" type="appl" version="1.8.0">Web Video Caster - Receiver</app>
-            <app id="2213" type="appl" version="5.5.13">Roku Media Player</app>
-            <app id="23333" type="appl" version="6.6.1">PBS KIDS</app>
-            <app id="151908" type="appl" version="13.10.5">The Roku Channel</app>
-            <app id="74519" type="appl" version="5.43.9">Pluto TV - Free Movies/Shows</app>
-            <app id="13535" type="appl" version="7.36.20">Plex - Free Movies & TV</app>
-            <app id="593099" type="appl" version="6.8.21">Peacock TV</app>
-            <app id="551012" type="appl" version="15.3.17">Apple TV</app>
-            <app id="28" type="appl" version="7.4.9">Pandora</app>
-            <app id="22297" type="appl" version="2.11.67">Spotify Music</app>
-        </apps>`;
-            
-            const apps = parseAppsXML(xmlString);
-            allApps = apps;
-            renderAppsInDrawer(apps);
-        }
+// ── Curated IDs ──
+const TRENDING_IDS   = ['tt9362722','tt1375666','tt0816692','tt0468569','tt0111161','tt0137523','tt0120737','tt0110912','tt0944947','tt5491994','tt0903747','tt2861424','tt4574334','tt0386676','tt1520211'];
+const POPULAR_MOVIES = ['tt1375666','tt0816692','tt0468569','tt0111161','tt0110912','tt0137523','tt0120737','tt0109830','tt0133093','tt0245429','tt0317248','tt0477347','tt1745960','tt3896198'];
+const POPULAR_TV     = ['tt0944947','tt0903747','tt5491994','tt2861424','tt4574334','tt0386676','tt1520211','tt0804484','tt3032476','tt2306299','tt6468322','tt7366338','tt1877514'];
 
-        // ===== INITIALIZATION =====
+// ── Render grid ──
+function renderGrid(items, container) {
+  if (!items.length) { container.innerHTML = '<div class="loading">No results found.</div>'; return; }
+  container.innerHTML = items.map(m => {
+    const poster = m.Poster && m.Poster !== 'N/A'
+      ? `<img src="${m.Poster}" alt="${m.Title}" loading="lazy">`
+      : `<div class="no-poster">No Image</div>`;
+    const isTV = m.Type === 'series';
+    const inList = watchlist.some(w => w.imdbId === m.imdbID);
+    const isWatched = watchlist.find(w => w.imdbId === m.imdbID)?.watchedAt;
+    return `
+      <div class="card${isWatched ? ' is-watched' : ''}" data-imdb="${m.imdbID}" data-type="${m.Type || 'movie'}" data-title="${(m.Title||'').replace(/"/g,'&quot;')}" data-year="${m.Year||''}" data-poster="${m.Poster !== 'N/A' ? m.Poster : ''}" data-rating="${m.imdbRating||''}">
+        ${isTV ? '<span class="card-type-badge tv">TV</span>' : ''}
+        ${poster}
+        <span class="card-watched-badge">✓ watched</span>
+        <div class="card-overlay">
+          <button class="card-action${inList ? ' in-list' : ''} ca-list" data-imdb="${m.imdbID}">${inList ? '✓ listed' : '+ list'}</button>
+          <button class="card-action${isWatched ? ' watched' : ''} ca-watched" data-imdb="${m.imdbID}">${isWatched ? '✓ watched' : '👁 watched'}</button>
+        </div>
+        <div class="card-info">
+          <div class="card-title">${m.Title}</div>
+          <div class="card-meta">${m.Year || ''}</div>
+        </div>
+      </div>`;
+  }).join('');
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load example apps on startup
-            loadExampleApps();
-            
-            // Close drawer when clicking overlay
-            const overlay = document.getElementById('drawer-overlay');
-            if (overlay) {
-                overlay.addEventListener('click', closeDrawer);
-            }
-            
-            // Handle keyboard shortcuts
-            document.addEventListener('keydown', function(e) {
-                // Escape key closes drawer
-                if (e.key === 'Escape') {
-                    closeDrawer();
-                    hideXMLPasteDialog();
-                }
-                
-                // Ctrl/Cmd + D opens drawer (if apps are loaded)
-                if ((e.ctrlKey || e.metaKey) && e.key === 'd' && allApps.length > 0) {
-                    e.preventDefault();
-                    openDrawer();
-                }
-            });
-            
-            // Auto-connect if IP is pre-filled
-            if (ipInput.value.trim()) {
-                rokuIP = ipInput.value.trim();
-                updateStatus('Connected', 'success');
-            }
-        });
-    </script>
+  container.querySelectorAll('.card').forEach(c => {
+    // Click card body → play (but not the overlay buttons)
+    c.addEventListener('click', e => {
+      if (e.target.closest('.card-action')) return;
+      loadPlayer(c.dataset.imdb, c.dataset.type);
+    });
+
+    // + List button
+    c.querySelector('.ca-list').addEventListener('click', e => {
+      e.stopPropagation();
+      const id = c.dataset.imdb;
+      const btn = c.querySelector('.ca-list');
+      if (watchlist.some(w => w.imdbId === id)) {
+        watchlist = watchlist.filter(w => w.imdbId !== id);
+        btn.textContent = '+ list'; btn.classList.remove('in-list');
+      } else {
+        watchlist.push({ imdbId: id, title: c.dataset.title, year: c.dataset.year, type: c.dataset.type, poster: c.dataset.poster, rating: c.dataset.rating, addedAt: new Date().toISOString(), watchedAt: null });
+        btn.textContent = '✓ listed'; btn.classList.add('in-list');
+      }
+      saveWatchlist(); renderWatchlist(); updateAddBtn();
+    });
+
+    // ✓ Watched button
+    c.querySelector('.ca-watched').addEventListener('click', e => {
+      e.stopPropagation();
+      const id = c.dataset.imdb;
+      const btn = c.querySelector('.ca-watched');
+      let entry = watchlist.find(w => w.imdbId === id);
+      if (!entry) {
+        // auto-add to list too
+        entry = { imdbId: id, title: c.dataset.title, year: c.dataset.year, type: c.dataset.type, poster: c.dataset.poster, rating: c.dataset.rating, addedAt: new Date().toISOString(), watchedAt: null };
+        watchlist.push(entry);
+        c.querySelector('.ca-list').textContent = '✓ listed';
+        c.querySelector('.ca-list').classList.add('in-list');
+      }
+      if (entry.watchedAt) {
+        entry.watchedAt = null;
+        btn.textContent = '👁 watched'; btn.classList.remove('watched');
+        c.classList.remove('is-watched');
+      } else {
+        entry.watchedAt = new Date().toISOString();
+        btn.textContent = '✓ watched'; btn.classList.add('watched');
+        c.classList.add('is-watched');
+      }
+      saveWatchlist(); renderWatchlist(); updateAddBtn();
+    });
+  });
+}
+
+async function fetchMany(ids) {
+  const results = await Promise.all(ids.map(id => omdb({ i: id })));
+  return results.filter(r => r.Response === 'True');
+}
+
+// ── Browse ──
+async function loadBrowse(tab) {
+  browseContent.innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+  const labels = { trending: 'Trending Now', movies: 'Popular Movies', tv: 'Popular TV Shows' };
+  const ids = { trending: TRENDING_IDS, movies: POPULAR_MOVIES, tv: POPULAR_TV };
+  const gridId = { trending: 'trendGrid', movies: 'movGrid', tv: 'tvGrid' };
+  const items = await fetchMany(ids[tab]);
+  browseContent.innerHTML = `<div class="section-title">${labels[tab]}</div><div class="grid" id="${gridId[tab]}"></div>`;
+  renderGrid(items, document.getElementById(gridId[tab]));
+}
+
+// ── Search ──
+async function execSearch(query) {
+  browseContent.innerHTML = '<div class="loading"><div class="spinner"></div>Searching...</div>';
+  const data = await omdb({ s: query, type: currentTab === 'tv' ? 'series' : '' });
+  if (data.Response === 'True') {
+    browseContent.innerHTML = `<div class="section-title">Results for "${query}"</div><div class="grid" id="srchGrid"></div>`;
+    renderGrid(data.Search, document.getElementById('srchGrid'));
+  } else {
+    browseContent.innerHTML = `<div class="loading">No results for "${query}"</div>`;
+  }
+}
+
+async function doSearch(query) {
+  if (!query.trim()) {
+    pushHistory({ type: 'browse', tab: currentTab, label: currentTab.charAt(0).toUpperCase() + currentTab.slice(1) });
+    showBrowse();
+    await loadBrowse(currentTab);
+    return;
+  }
+  pushHistory({ type: 'search', query, label: `🔍 "${query}"` });
+  showBrowse();
+  await execSearch(query);
+}
+
+// ── Player ──
+async function execLoadPlayer(imdbId, type) {
+  playerIframe.src = type === 'series'
+    ? `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=1&episode=1`
+    : `https://vidsrc.me/embed/movie?imdb=${imdbId}`;
+
+  const data = await omdb({ i: imdbId, plot: 'short' });
+  if (data.Response !== 'True') return;
+
+  currentMeta = data;
+  updateAddBtn();
+
+  playerTitle.textContent = data.Title;
+  playerPoster.src = data.Poster !== 'N/A' ? data.Poster : '';
+  playerPoster.style.display = data.Poster !== 'N/A' ? '' : 'none';
+  playerPlot.textContent = data.Plot !== 'N/A' ? data.Plot : '';
+
+  const tags = [];
+  if (data.Year) tags.push({ text: data.Year });
+  if (data.Rated && data.Rated !== 'N/A') tags.push({ text: data.Rated, red: true });
+  if (data.Runtime && data.Runtime !== 'N/A') tags.push({ text: data.Runtime });
+  if (data.Genre) data.Genre.split(', ').forEach(g => tags.push({ text: g }));
+  if (data.imdbRating && data.imdbRating !== 'N/A') tags.push({ text: '★ ' + data.imdbRating, red: true });
+  playerTags.innerHTML = tags.map(t => `<span class="ptag${t.red ? ' red' : ''}">${t.text}</span>`).join('');
+
+  if (type === 'series' && data.totalSeasons && parseInt(data.totalSeasons) > 0) {
+    const total = parseInt(data.totalSeasons);
+    seasonSel.innerHTML = Array.from({ length: total }, (_, i) => `<option value="${i+1}">Season ${i+1}</option>`).join('');
+    episodeSel.innerHTML = Array.from({ length: 20 }, (_, i) => `<option value="${i+1}">Episode ${i+1}</option>`).join('');
+    episodeBar.classList.add('visible');
+  } else {
+    episodeBar.classList.remove('visible');
+  }
+  episodeBar.dataset.imdb = imdbId;
+}
+
+async function loadPlayer(imdbId, type) {
+  // Peek at title for breadcrumb label
+  const data = await omdb({ i: imdbId });
+  const label = data.Response === 'True' ? data.Title : imdbId;
+  pushHistory({ type: 'player', imdbId, mediaType: type, label });
+  showPlayer();
+  await execLoadPlayer(imdbId, type);
+}
+
+// ── Nav buttons ──
+navBackBtn.addEventListener('click', () => goToHistoryIdx(historyIdx - 1));
+navFwdBtn.addEventListener('click',  () => goToHistoryIdx(historyIdx + 1));
+
+// ── Keyboard shortcuts ──
+document.addEventListener('keydown', e => {
+  if ((e.altKey || e.metaKey) && e.key === 'ArrowLeft')  { e.preventDefault(); if (!navBackBtn.disabled) navBackBtn.click(); }
+  if ((e.altKey || e.metaKey) && e.key === 'ArrowRight') { e.preventDefault(); if (!navFwdBtn.disabled)  navFwdBtn.click(); }
+});
+
+// ── Episode play ──
+document.getElementById('epPlayBtn').addEventListener('click', () => {
+  const imdb = episodeBar.dataset.imdb;
+  const s = seasonSel.value, e = episodeSel.value;
+  playerIframe.src = `https://vidsrc.me/embed/tv?imdb=${imdb}&season=${s}&episode=${e}`;
+});
+
+// ── Tabs ──
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentTab = tab.dataset.tab;
+    searchInput.value = '';
+    const label = tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1);
+    pushHistory({ type: 'browse', tab: currentTab, label });
+    showBrowse();
+    loadBrowse(currentTab);
+  });
+});
+
+// ── Search ──
+searchInput.addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => doSearch(e.target.value), 400);
+});
+
+// ── TT direct ──
+document.getElementById('ttBtn').addEventListener('click', () => {
+  const tt = ttInput.value.trim();
+  if (!tt) return;
+  const id = tt.startsWith('tt') ? tt : 'tt' + tt;
+  loadPlayer(id, 'movie');
+});
+ttInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('ttBtn').click(); });
+
+// ── Back to browse (player meta button) ──
+document.getElementById('backBtn').addEventListener('click', () => {
+  if (!navBackBtn.disabled) navBackBtn.click();
+  else {
+    playerIframe.src = '';
+    episodeBar.classList.remove('visible');
+    pushHistory({ type: 'browse', tab: currentTab, label: currentTab.charAt(0).toUpperCase() + currentTab.slice(1) });
+    showBrowse();
+    loadBrowse(currentTab);
+  }
+});
+
+// ── Fullscreen ──
+document.getElementById('fullscreenBtn').addEventListener('click', () => {
+  const req = playerIframe.requestFullscreen || playerIframe.webkitRequestFullscreen || playerIframe.mozRequestFullScreen;
+  if (req) req.call(playerIframe);
+});
+
+// ── Watchlist ──
+let watchlist = JSON.parse(localStorage.getItem('freeflow_watchlist') || '[]');
+let currentMeta = null; // holds last loaded movie data for adding
+
+function saveWatchlist() {
+  localStorage.setItem('freeflow_watchlist', JSON.stringify(watchlist));
+}
+
+function renderWatchlist() {
+  const count = watchlist.length;
+  document.getElementById('wlCount').textContent = count + ' title' + (count !== 1 ? 's' : '');
+  const badge = document.getElementById('wlBadge');
+  if (count > 0) { badge.style.display = ''; badge.textContent = count; }
+  else { badge.style.display = 'none'; }
+
+  const empty = document.getElementById('wlEmpty');
+  const list  = document.getElementById('wlList');
+
+  if (!count) {
+    empty.style.display = 'flex';
+    // remove all items
+    list.querySelectorAll('.wl-item').forEach(el => el.remove());
+    return;
+  }
+  empty.style.display = 'none';
+  list.querySelectorAll('.wl-item').forEach(el => el.remove());
+  watchlist.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'wl-item';
+    const watchedStr = item.watchedAt
+      ? `<span class="watched-dot"></span>watched ${new Date(item.watchedAt).toLocaleDateString()}`
+      : 'not watched';
+    div.innerHTML = `
+      <img class="wl-item-poster" src="${item.poster || ''}" alt="" onerror="this.style.display='none'">
+      <div class="wl-item-info">
+        <div class="wl-item-title">${item.title}</div>
+        <div class="wl-item-meta">${item.year || ''} · ${item.type === 'series' ? 'TV' : 'Movie'}${item.rating ? ' · ★ ' + item.rating : ''}</div>
+        <div class="wl-item-meta" style="margin-top:3px;font-size:10px">${watchedStr}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0">
+        <button class="wl-item-remove" data-id="${item.imdbId}" title="Remove">✕</button>
+        <button class="wl-btn wl-toggle-watched" data-id="${item.imdbId}" style="font-size:9px;padding:3px 6px;${item.watchedAt ? 'color:#4caf50;border-color:#1a3a1a' : ''}">${item.watchedAt ? '✓ seen' : '👁 mark'}</button>
+      </div>`;
+    div.querySelector('.wl-item-info').addEventListener('click', () => {
+      closeDrawer();
+      loadPlayer(item.imdbId, item.type);
+    });
+    div.querySelector('.wl-item-remove').addEventListener('click', e => {
+      e.stopPropagation();
+      watchlist = watchlist.filter(w => w.imdbId !== item.imdbId);
+      saveWatchlist(); renderWatchlist(); updateAddBtn();
+    });
+    div.querySelector('.wl-toggle-watched').addEventListener('click', e => {
+      e.stopPropagation();
+      const entry = watchlist.find(w => w.imdbId === item.imdbId);
+      if (entry) {
+        entry.watchedAt = entry.watchedAt ? null : new Date().toISOString();
+        saveWatchlist(); renderWatchlist(); updateAddBtn();
+      }
+    });
+    list.appendChild(div);
+  });
+}
+
+function updateAddBtn() {
+  const btn = document.getElementById('wlAddBtn');
+  if (!currentMeta) return;
+  const inList = watchlist.some(w => w.imdbId === currentMeta.imdbID);
+  btn.textContent = inList ? '✓ IN LIST' : '+ ADD TO LIST';
+  btn.style.color = inList ? '#4caf50' : '';
+  btn.style.borderColor = inList ? '#1a3a1a' : '';
+}
+
+function openDrawer()  { document.getElementById('wlDrawer').classList.add('open'); document.getElementById('wlOverlay').classList.add('open'); }
+function closeDrawer() { document.getElementById('wlDrawer').classList.remove('open'); document.getElementById('wlOverlay').classList.remove('open'); }
+
+document.getElementById('wlOpenBtn').addEventListener('click', openDrawer);
+document.getElementById('wlCloseBtn').addEventListener('click', closeDrawer);
+document.getElementById('wlOverlay').addEventListener('click', closeDrawer);
+
+document.getElementById('wlAddBtn').addEventListener('click', () => {
+  if (!currentMeta) return;
+  const id = currentMeta.imdbID;
+  if (watchlist.some(w => w.imdbId === id)) {
+    watchlist = watchlist.filter(w => w.imdbId !== id);
+  } else {
+    watchlist.push({
+      imdbId: id,
+      title: currentMeta.Title,
+      year: currentMeta.Year,
+      type: currentMeta.Type,
+      poster: currentMeta.Poster !== 'N/A' ? currentMeta.Poster : '',
+      rating: currentMeta.imdbRating !== 'N/A' ? currentMeta.imdbRating : '',
+      genre: currentMeta.Genre,
+      addedAt: new Date().toISOString()
+    });
+  }
+  saveWatchlist();
+  renderWatchlist();
+  updateAddBtn();
+});
+
+document.getElementById('wlClearBtn').addEventListener('click', () => {
+  if (!watchlist.length) return;
+  if (confirm('Clear entire watchlist?')) {
+    watchlist = [];
+    saveWatchlist();
+    renderWatchlist();
+    updateAddBtn();
+  }
+});
+
+// ── Export ──
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+document.getElementById('wlExportCSV').addEventListener('click', () => {
+  if (!watchlist.length) return;
+  const header = 'Title,Year,Type,IMDb ID,Rating,Genre,Added,Watched\n';
+  const rows = watchlist.map(w =>
+    [w.title, w.year, w.type, w.imdbId, w.rating, w.genre, w.addedAt, w.watchedAt || '']
+    .map(v => `"${(v||'').replace(/"/g,'""')}"`)
+    .join(',')
+  ).join('\n');
+  downloadFile(header + rows, 'watchlist.csv', 'text/csv');
+});
+
+document.getElementById('wlExportJSON').addEventListener('click', () => {
+  if (!watchlist.length) return;
+  downloadFile(JSON.stringify(watchlist, null, 2), 'watchlist.json', 'application/json');
+});
+
+renderWatchlist();
+
+// ── Init ──
+pushHistory({ type: 'browse', tab: 'trending', label: 'Trending' });
+showBrowse();
+loadBrowse('trending');
+</script>
 </body>
 </html>
