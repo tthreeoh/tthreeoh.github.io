@@ -21,9 +21,7 @@
     --font-body: 'DM Sans', sans-serif;
   }
 
-  html {
-    font-size: 200%;
-  }
+  html { font-size: 200%; }
 
   html, body {
     height: 100%;
@@ -33,7 +31,6 @@
     overflow: hidden;
   }
 
-  /* ── APP SHELL ── */
   .app {
     display: flex;
     flex-direction: column;
@@ -98,9 +95,7 @@
     padding: 0 12px;
     gap: 8px;
   }
-
   .search-wrap svg { flex-shrink: 0; opacity: 0.4; }
-
   .search-wrap input {
     background: none;
     border: none;
@@ -145,6 +140,7 @@
     transition: opacity 0.15s;
   }
   .btn:hover { opacity: 0.85; }
+
   .btn-ghost {
     background: none;
     border: 1px solid var(--border);
@@ -158,7 +154,7 @@
   .btn-ghost:hover { border-color: var(--red-dim); color: var(--red); }
   .btn-ghost:disabled { opacity: 0.25; pointer-events: none; }
 
-  /* ── HISTORY / BREADCRUMB ── */
+  /* ── NAV BAR ── */
   .nav-bar {
     display: flex;
     align-items: center;
@@ -228,19 +224,64 @@
   }
   .browse-panel.visible { display: block; }
 
+  /* Category filter bar */
+  .cat-bar {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cat-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .cat-btn:hover { color: var(--text); border-color: #444; }
+  .cat-btn.active {
+    color: var(--red);
+    border-color: var(--red-dim);
+    background: rgba(230,57,70,0.08);
+  }
+
   .section-title {
     font-family: var(--font-display);
     font-size: 20px;
     letter-spacing: 0.05em;
     color: var(--text);
     margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-count {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 0.03em;
+  }
+
+  .section-block {
+    margin-bottom: 36px;
   }
 
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(8em, 1fr));
     gap: 12px;
-    margin-bottom: 32px;
+    margin-bottom: 4px;
   }
 
   .card {
@@ -255,7 +296,6 @@
     transform: translateY(-3px);
     border-color: var(--red-dim);
   }
-
   .card:hover .card-overlay { opacity: 1; }
 
   .card-overlay {
@@ -309,9 +349,7 @@
     filter: brightness(0.9);
   }
 
-  .card-info {
-    padding: 8px;
-  }
+  .card-info { padding: 8px; }
 
   .card-title {
     font-size: 12px;
@@ -363,15 +401,12 @@
   }
   .player-panel.visible { display: flex; }
 
-  /* THE KEY FIX: iframe container uses position relative + padding trick,
-     AND the iframe itself gets allowfullscreen properly */
   .player-container {
     position: relative;
     flex: 1;
     background: #000;
     overflow: hidden;
   }
-
   .player-container iframe {
     position: absolute;
     top: 0; left: 0;
@@ -438,7 +473,7 @@
     flex-shrink: 0;
   }
 
-  /* ── EPISODE SELECTOR (TV) ── */
+  /* ── EPISODE SELECTOR ── */
   .episode-bar {
     display: none;
     align-items: center;
@@ -491,11 +526,6 @@
     padding-left: 12px;
     flex-shrink: 0;
   }
-
-  .key-wrap.saved .key-dot {
-    background: #4caf50;
-  }
-
   .key-dot {
     width: 6px;
     height: 6px;
@@ -681,10 +711,190 @@
     vertical-align: middle;
     line-height: 1;
   }
+
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
   ::-webkit-scrollbar-thumb:hover { background: #444; }
+
+  /* ── PLUGIN MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    width: 560px;
+    max-width: 95vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    letter-spacing: 0.05em;
+    color: var(--text);
+  }
+
+  .modal-subtitle {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-left: 10px;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 6px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .modal-close:hover { color: var(--red); }
+
+  .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .plugin-section {
+    border: 1px solid var(--border);
+    padding: 14px;
+  }
+
+  .plugin-section-title {
+    font-family: var(--font-display);
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    color: var(--text);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .plugin-section-title span {
+    font-family: var(--font-body);
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    text-transform: none;
+  }
+
+  .plugin-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .plugin-code {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: #7ec8e3;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    padding: 8px 10px;
+    resize: vertical;
+    min-height: 120px;
+    outline: none;
+    line-height: 1.5;
+  }
+  .plugin-code:focus { border-color: var(--red-dim); }
+
+  .plugin-log {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    padding: 8px 10px;
+    min-height: 60px;
+    max-height: 120px;
+    overflow-y: auto;
+    line-height: 1.6;
+  }
+
+  .log-line { margin-bottom: 2px; }
+  .log-ok   { color: #4caf50; }
+  .log-warn { color: #ffc107; }
+  .log-err  { color: var(--red); }
+
+  .plugin-btn-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .modal-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .stat-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 10px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--red);
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .api-ref {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: #7ec8e3;
+    line-height: 1.7;
+  }
+  .api-comment { color: #555; }
+  .api-fn      { color: #e6c97d; }
+  .api-str     { color: #a8cc8c; }
 </style>
 </head>
 <body>
@@ -719,6 +929,10 @@
       <span class="key-dot" id="keyDot" title="No key set"></span>
     </div>
 
+    <button class="btn-ghost" id="pluginBtn" style="border-left:1px solid var(--border);padding-left:14px;margin-left:2px;border-radius:0;border-top:none;border-bottom:none;border-right:none;" title="Library Plugin System">
+      ⚡ PLUGIN
+    </button>
+
     <button class="btn-ghost" id="wlOpenBtn" style="border-left:1px solid var(--border);padding-left:14px;margin-left:2px;border-radius:0;border-top:none;border-bottom:none;border-right:none;">
       ☰ LIST <span class="list-badge" id="wlBadge" style="display:none">0</span>
     </button>
@@ -744,6 +958,87 @@
         <div style="font-size:24px">📋</div>
         <div>Your list is empty</div>
         <div style="font-size:10px">Add titles while watching</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLUGIN MODAL -->
+  <div class="modal-overlay" id="pluginOverlay">
+    <div class="modal" id="pluginModal">
+      <div class="modal-header">
+        <div style="display:flex;align-items:baseline">
+          <span class="modal-title">PLUGIN SYSTEM</span>
+          <span class="modal-subtitle">window.FreeFlow API</span>
+        </div>
+        <button class="modal-close" id="pluginClose">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Stats -->
+        <div class="modal-stats" id="pluginStats"></div>
+
+        <!-- API Reference -->
+        <div class="plugin-section">
+          <div class="plugin-section-title">API REFERENCE <span>available on window.FreeFlow</span></div>
+          <div class="api-ref">
+<span class="api-comment">// Add a new category with IDs</span>
+<span class="api-fn">FreeFlow.addCategory</span>(<span class="api-str">'movies'</span>, <span class="api-str">'My Picks'</span>, [<span class="api-str">'tt0120737'</span>, ...])
+
+<span class="api-comment">// Append IDs to an existing category</span>
+<span class="api-fn">FreeFlow.addIds</span>(<span class="api-str">'tv'</span>, <span class="api-str">'Drama'</span>, [<span class="api-str">'tt0944947'</span>, ...])
+
+<span class="api-comment">// Add IDs to trending</span>
+<span class="api-fn">FreeFlow.addTrending</span>([<span class="api-str">'tt9362722'</span>, ...])
+
+<span class="api-comment">// Remove a category entirely</span>
+<span class="api-fn">FreeFlow.removeCategory</span>(<span class="api-str">'movies'</span>, <span class="api-str">'My Picks'</span>)
+
+<span class="api-comment">// Replace whole library (trending + movies + tv)</span>
+<span class="api-fn">FreeFlow.setLibrary</span>(libraryObject)
+
+<span class="api-comment">// Get current library (for export)</span>
+<span class="api-fn">FreeFlow.getLibrary</span>()
+
+<span class="api-comment">// Reload the current browse view</span>
+<span class="api-fn">FreeFlow.refresh</span>()</div>
+        </div>
+
+        <!-- Run JS -->
+        <div class="plugin-section">
+          <div class="plugin-section-title">RUN SCRIPT <span>execute JS with FreeFlow API access</span></div>
+          <textarea class="plugin-code" id="pluginCode" spellcheck="false" placeholder="// Example:
+FreeFlow.addCategory('movies', 'My Picks', ['tt0120737', 'tt0468569']);
+FreeFlow.refresh();"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+            <button class="btn" id="pluginRunBtn">▶ RUN</button>
+            <button class="btn-ghost" id="pluginClearCode">CLEAR</button>
+            <button class="btn-ghost" id="pluginLoadTemplate">LOAD TEMPLATE</button>
+          </div>
+          <div style="margin-top:10px;font-size:10px;color:var(--muted);letter-spacing:0.04em">CONSOLE</div>
+          <div class="plugin-log" id="pluginLog"><div class="log-line api-comment">// Output appears here</div></div>
+        </div>
+
+        <!-- Import -->
+        <div class="plugin-section">
+          <div class="plugin-section-title">IMPORT LIBRARY <span>load .js plugin or .json data file</span></div>
+          <div class="plugin-btn-row">
+            <button class="btn-ghost" id="importJsBtn">↑ IMPORT .JS</button>
+            <button class="btn-ghost" id="importJsonBtn">↑ IMPORT .JSON</button>
+            <input type="file" id="importJsFile" accept=".js" style="display:none">
+            <input type="file" id="importJsonFile" accept=".json" style="display:none">
+            <span id="importStatus" style="font-size:10px;color:var(--muted);align-self:center"></span>
+          </div>
+        </div>
+
+        <!-- Export -->
+        <div class="plugin-section">
+          <div class="plugin-section-title">EXPORT LIBRARY <span>save current library to file</span></div>
+          <div class="plugin-btn-row">
+            <button class="btn-ghost" id="exportJsBtn">↓ EXPORT .JS</button>
+            <button class="btn-ghost" id="exportJsonBtn">↓ EXPORT .JSON</button>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -805,7 +1100,7 @@
 </div>
 
 <script>
-const OMDB_KEY = 'trilogy'; // <-- replace with your OMDB key
+const OMDB_KEY = 'trilogy';
 
 // ── Elements ──
 const browsePanel  = document.getElementById('browsePanel');
@@ -826,7 +1121,6 @@ const navFwdBtn    = document.getElementById('navFwd');
 const breadcrumbs  = document.getElementById('breadcrumbs');
 const keyInput     = document.getElementById('keyInput');
 const keyDot       = document.getElementById('keyDot');
-const keyWrap      = document.querySelector('.key-wrap');
 
 // ── API key management ──
 let omdbKey = localStorage.getItem('omdb_key') || OMDB_KEY;
@@ -835,8 +1129,6 @@ function updateKeyUI(valid) {
   keyDot.style.background = valid ? '#4caf50' : '#666';
   keyDot.title = valid ? 'Key active' : 'No key set';
 }
-
-// Restore saved key on load
 if (localStorage.getItem('omdb_key')) {
   keyInput.value = localStorage.getItem('omdb_key');
   updateKeyUI(true);
@@ -845,7 +1137,6 @@ if (localStorage.getItem('omdb_key')) {
 document.getElementById('keyBtn').addEventListener('click', async () => {
   const val = keyInput.value.trim();
   if (!val) return;
-  // Quick validation ping
   const test = await fetch(`https://www.omdbapi.com/?apikey=${val}&i=tt0052077`).then(r => r.json());
   if (test.Response === 'True') {
     omdbKey = val;
@@ -861,14 +1152,12 @@ document.getElementById('keyBtn').addEventListener('click', async () => {
 keyInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('keyBtn').click(); });
 
 // ── History stack ──
-// Each entry: { type: 'browse'|'search'|'player', tab?, query?, imdbId?, mediaType?, label }
 let history = [];
 let historyIdx = -1;
-let navigating = false; // flag to prevent pushState while replaying
+let navigating = false;
 
 function pushHistory(entry) {
   if (navigating) return;
-  // Drop any forward history when navigating to a new place
   history = history.slice(0, historyIdx + 1);
   history.push(entry);
   historyIdx = history.length - 1;
@@ -883,7 +1172,6 @@ function updateNavUI() {
 
 function renderBreadcrumbs() {
   if (!history.length) { breadcrumbs.innerHTML = ''; return; }
-  // Show last 5 entries max
   const start = Math.max(0, historyIdx - 4);
   const visible = history.slice(start, historyIdx + 1);
   breadcrumbs.innerHTML = visible.map((e, i) => {
@@ -908,20 +1196,18 @@ async function goToHistoryIdx(idx) {
 
 async function replayEntry(entry) {
   if (entry.type === 'browse') {
-    // Restore tab state
     document.querySelectorAll('.tab').forEach(t => {
       t.classList.toggle('active', t.dataset.tab === entry.tab);
     });
     currentTab = entry.tab;
+    currentCategory = entry.category || null;
     searchInput.value = '';
     showBrowse();
     await loadBrowse(entry.tab);
-
   } else if (entry.type === 'search') {
     searchInput.value = entry.query;
     showBrowse();
     await execSearch(entry.query);
-
   } else if (entry.type === 'player') {
     showPlayer();
     await execLoadPlayer(entry.imdbId, entry.mediaType);
@@ -930,6 +1216,7 @@ async function replayEntry(entry) {
 
 // ── State ──
 let currentTab = 'trending';
+let currentCategory = null;
 let searchTimer = null;
 
 // ── Panel toggles ──
@@ -951,10 +1238,165 @@ async function omdb(params) {
   return r.json();
 }
 
-// ── Curated IDs ──
-const TRENDING_IDS   = ['tt9362722','tt1375666','tt0816692','tt0468569','tt0111161','tt0137523','tt0120737','tt0110912','tt0944947','tt5491994','tt0903747','tt2861424','tt4574334','tt0386676','tt1520211'];
-const POPULAR_MOVIES = ['tt1375666','tt0816692','tt0468569','tt0111161','tt0110912','tt0137523','tt0120737','tt0109830','tt0133093','tt0245429','tt0317248','tt0477347','tt1745960','tt3896198'];
-const POPULAR_TV     = ['tt0944947','tt0903747','tt5491994','tt2861424','tt4574334','tt0386676','tt1520211','tt0804484','tt3032476','tt2306299','tt6468322','tt7366338','tt1877514'];
+// ═══════════════════════════════════════════════════════════════
+// ██████████████   CONTENT LIBRARY   ████████████████████████████
+// ═══════════════════════════════════════════════════════════════
+
+const LIBRARY = {
+
+  // ── TRENDING (mixed) ──
+  trending: [
+    'tt9362722','tt1375666','tt0816692','tt0468569','tt0111161',
+    'tt0137523','tt0120737','tt0110912','tt0944947','tt5491994',
+    'tt0903747','tt2861424','tt4574334','tt0386676','tt1520211',
+    'tt6751668','tt1853728','tt4154796','tt2395427','tt3501632',
+    'tt4154756','tt3480822','tt6045800','tt7286456','tt1856101',
+    'tt0499549','tt1375666','tt1270797','tt0993846','tt0816692',
+  ],
+
+  // ── MOVIES by Category ──
+  movies: {
+    'All-Time Greatest': [
+      'tt0111161','tt0068646','tt0071562','tt0468569','tt0050083',
+      'tt0108052','tt0167260','tt0110912','tt0120737','tt0060196',
+      'tt0137523','tt1375666','tt0109830','tt0816692','tt0133093',
+      'tt0099685','tt0073486','tt0076759','tt0080684','tt0082971',
+    ],
+    'Action & Adventure': [
+      'tt4154796','tt2395427','tt3501632','tt4154756','tt0499549',
+      'tt1745960','tt3896198','tt0468569','tt0082971','tt0119217',
+      'tt2527336','tt0258463','tt0172495','tt0816692','tt0209144',
+      'tt2380307','tt3315342','tt0103064','tt0317248','tt1570827',
+    ],
+    'Sci-Fi & Fantasy': [
+      'tt0076759','tt0080684','tt0086190','tt0133093','tt0816692',
+      'tt1375666','tt0109830','tt0083658','tt0910970','tt0407304',
+      'tt1375666','tt0395169','tt0470752','tt1483013','tt2543164',
+      'tt2250912','tt1856101','tt3748528','tt0414993','tt0120382',
+    ],
+    'Drama & Awards': [
+      'tt0111161','tt0068646','tt0108052','tt0050083','tt0073486',
+      'tt0099685','tt0167260','tt1853728','tt0405094','tt0361748',
+      'tt1305806','tt0993846','tt0477347','tt0119488','tt0266543',
+      'tt0887912','tt0120689','tt4116284','tt1832382','tt2278388',
+    ],
+    'Comedy': [
+      'tt0137523','tt0109830','tt2527338','tt1099212','tt0118715',
+      'tt0107048','tt0107290','tt0910936','tt1631867','tt0368226',
+      'tt0361862','tt2674426','tt0944835','tt1270798','tt0116282',
+      'tt1386703','tt0822832','tt4481514','tt3748528','tt0482571',
+    ],
+    'Horror & Thriller': [
+      'tt0081505','tt0073195','tt0114369','tt1179891','tt6751668',
+      'tt7286456','tt0167404','tt1745960','tt0910936','tt2380307',
+      'tt0387564','tt1877832','tt0093058','tt0043631','tt0119488',
+      'tt0181875','tt0120586','tt2802850','tt1375666','tt2119532',
+    ],
+    'Romance': [
+      'tt0109830','tt0758758','tt0268978','tt0295297','tt0245429',
+      'tt0338013','tt0112462','tt0120338','tt0381681','tt1375666',
+      'tt0266543','tt0120905','tt0435761','tt1951265','tt0454921',
+      'tt1727776','tt0816692','tt0120689','tt1020536','tt2562232',
+    ],
+    'Animation': [
+      'tt0910970','tt0266543','tt0245429','tt0435761','tt0317219',
+      'tt0120363','tt0119217','tt1790809','tt0892769','tt2096673',
+      'tt2294629','tt0382932','tt5013056','tt4048272','tt2380307',
+      'tt2709768','tt4649466','tt0325980','tt3606756','tt6105098',
+    ],
+    'Crime & Heist': [
+      'tt0068646','tt0071562','tt0110912','tt0099685','tt0209144',
+      'tt0482571','tt0172495','tt0986264','tt0467406','tt0361862',
+      'tt2267998','tt0395169','tt0317705','tt0163025','tt0780504',
+      'tt1305806','tt1800241','tt1227926','tt0361748','tt0758758',
+    ],
+    'War & History': [
+      'tt0108052','tt0060196','tt0266697','tt0364569','tt0361748',
+      'tt1853728','tt0119643','tt0338013','tt0116231','tt1418815',
+      'tt0405094','tt0318462','tt2179136','tt2802850','tt1535109',
+      'tt0172495','tt2024544','tt3011894','tt2737304','tt0758573',
+    ],
+    'Classic Cinema': [
+      'tt0050083','tt0073486','tt0041959','tt0033467','tt0047396',
+      'tt0043014','tt0056592','tt0047478','tt0051201','tt0042876',
+      'tt0052077','tt0054215','tt0034583','tt0031381','tt0027977',
+      'tt0053125','tt0064116','tt0056172','tt0058946','tt0066206',
+    ],
+    'Documentary': [
+      'tt1950186','tt1528133','tt1907360','tt2433392','tt0094964',
+      'tt4179452','tt2872718','tt2543472','tt0097523','tt1598642',
+      'tt3521810','tt0405159','tt6769208','tt4901364','tt2402927',
+      'tt0283877','tt0816692','tt3110958','tt1016247','tt7125860',
+    ],
+  },
+
+  // ── TV by Category ──
+  tv: {
+    'Essential TV': [
+      'tt0944947','tt0903747','tt5491994','tt2861424','tt4574334',
+      'tt0386676','tt1520211','tt0804484','tt3032476','tt2306299',
+      'tt6468322','tt7366338','tt1877514','tt0460649','tt0108778',
+    ],
+    'Drama': [
+      'tt0944947','tt0903747','tt2861424','tt6468322','tt7366338',
+      'tt1877514','tt0804484','tt0475784','tt1266020','tt2356777',
+      'tt0455275','tt1520211','tt4574334','tt2788316','tt7767422',
+      'tt4016454','tt5753856','tt0285403','tt0141842','tt3107288',
+    ],
+    'Comedy': [
+      'tt0386676','tt0460649','tt0108778','tt3032476','tt0098904',
+      'tt1733785','tt2306299','tt0367279','tt0077975','tt0096697',
+      'tt2575988','tt0072562','tt2861424','tt2442560','tt5753856',
+      'tt0115167','tt0052048','tt0185906','tt0290978','tt4574334',
+    ],
+    'Crime & Mystery': [
+      'tt2802850','tt3032476','tt2261391','tt3006802','tt2193021',
+      'tt1475582','tt2707408','tt3086114','tt5753856','tt0118421',
+      'tt0773262','tt0412142','tt1119644','tt2661044','tt4532368',
+      'tt0407362','tt1632701','tt4158110','tt5788792','tt3510070',
+    ],
+    'Sci-Fi & Fantasy': [
+      'tt5491994','tt0141842','tt4574334','tt6468322','tt0436992',
+      'tt4158110','tt7767422','tt1196946','tt0898266','tt1520211',
+      'tt5421602','tt3322314','tt0773262','tt1831804','tt4786824',
+      'tt1266020','tt2357547','tt2707408','tt0475784','tt0115226',
+    ],
+    'Thriller & Suspense': [
+      'tt7366338','tt1877514','tt0804484','tt2356777','tt4016454',
+      'tt0475784','tt2788316','tt2661044','tt1454029','tt7587890',
+      'tt6048596','tt2210044','tt5925154','tt5155780','tt0285403',
+      'tt5040012','tt2193021','tt3343028','tt3717490','tt1219024',
+    ],
+    'Anime': [
+      'tt0988824','tt0409591','tt2560140','tt1266020','tt2394629',
+      'tt0434409','tt0245429','tt1515189','tt0417299','tt2560140',
+      'tt0354058','tt0161952','tt0388629','tt0291358','tt1407836',
+      'tt1618448','tt0214341','tt2560752','tt3006802','tt0078588',
+    ],
+    'Reality & Documentary': [
+      'tt0903747','tt1831801','tt4955642','tt1798819','tt2741602',
+      'tt8819118','tt3659388','tt4786824','tt1586680','tt4768902',
+      'tt5788792','tt1477834','tt5714970','tt3006802','tt7816918',
+      'tt0423238','tt3749900','tt1723816','tt5779842','tt0115168',
+    ],
+    'Kids & Family': [
+      'tt0096697','tt0052048','tt0074028','tt0078987','tt0367279',
+      'tt0898266','tt0112230','tt0472027','tt1262464','tt0285463',
+      'tt4477976','tt0148713','tt3398228','tt0121955','tt1316669',
+      'tt0381798','tt0083443','tt0052048','tt0362270','tt0115267',
+    ],
+    'Limited Series': [
+      'tt0141842','tt1475582','tt7587890','tt2356777','tt1219024',
+      'tt7016936','tt4574334','tt6468322','tt2788316','tt4016454',
+      'tt6048596','tt7766378','tt5925154','tt8177370','tt3343028',
+      'tt7532826','tt8282930','tt1831801','tt4786824','tt7442562',
+    ],
+  }
+};
+
+// All categories for the filter bar
+const MOVIE_CATS = Object.keys(LIBRARY.movies);
+const TV_CATS    = Object.keys(LIBRARY.tv);
 
 // ── Render grid ──
 function renderGrid(items, container) {
@@ -983,13 +1425,11 @@ function renderGrid(items, container) {
   }).join('');
 
   container.querySelectorAll('.card').forEach(c => {
-    // Click card body → play (but not the overlay buttons)
     c.addEventListener('click', e => {
       if (e.target.closest('.card-action')) return;
       loadPlayer(c.dataset.imdb, c.dataset.type);
     });
 
-    // + List button
     c.querySelector('.ca-list').addEventListener('click', e => {
       e.stopPropagation();
       const id = c.dataset.imdb;
@@ -1004,14 +1444,12 @@ function renderGrid(items, container) {
       saveWatchlist(); renderWatchlist(); updateAddBtn();
     });
 
-    // ✓ Watched button
     c.querySelector('.ca-watched').addEventListener('click', e => {
       e.stopPropagation();
       const id = c.dataset.imdb;
       const btn = c.querySelector('.ca-watched');
       let entry = watchlist.find(w => w.imdbId === id);
       if (!entry) {
-        // auto-add to list too
         entry = { imdbId: id, title: c.dataset.title, year: c.dataset.year, type: c.dataset.type, poster: c.dataset.poster, rating: c.dataset.rating, addedAt: new Date().toISOString(), watchedAt: null };
         watchlist.push(entry);
         c.querySelector('.ca-list').textContent = '✓ listed';
@@ -1032,27 +1470,87 @@ function renderGrid(items, container) {
 }
 
 async function fetchMany(ids) {
-  const results = await Promise.all(ids.map(id => omdb({ i: id })));
+  // deduplicate
+  const unique = [...new Set(ids)];
+  const results = await Promise.all(unique.map(id => omdb({ i: id })));
   return results.filter(r => r.Response === 'True');
 }
 
 // ── Browse ──
+// Fetches one section at a time, progressively rendering
 async function loadBrowse(tab) {
-  browseContent.innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
-  const labels = { trending: 'Trending Now', movies: 'Popular Movies', tv: 'Popular TV Shows' };
-  const ids = { trending: TRENDING_IDS, movies: POPULAR_MOVIES, tv: POPULAR_TV };
-  const gridId = { trending: 'trendGrid', movies: 'movGrid', tv: 'tvGrid' };
-  const items = await fetchMany(ids[tab]);
-  browseContent.innerHTML = `<div class="section-title">${labels[tab]}</div><div class="grid" id="${gridId[tab]}"></div>`;
-  renderGrid(items, document.getElementById(gridId[tab]));
+  if (tab === 'trending') {
+    browseContent.innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+    const items = await fetchMany(LIBRARY.trending);
+    browseContent.innerHTML = `
+      <div class="section-title">Trending Now <span class="section-count">${items.length} titles</span></div>
+      <div class="grid" id="trendGrid"></div>`;
+    renderGrid(items, document.getElementById('trendGrid'));
+    return;
+  }
+
+  const cats = tab === 'movies' ? MOVIE_CATS : TV_CATS;
+  const lib  = tab === 'movies' ? LIBRARY.movies : LIBRARY.tv;
+
+  // Build category filter bar + first section placeholder
+  browseContent.innerHTML = `
+    <div class="cat-bar" id="catBar">
+      <button class="cat-btn active" data-cat="all">All</button>
+      ${cats.map(c => `<button class="cat-btn" data-cat="${c}">${c}</button>`).join('')}
+    </div>
+    <div id="sectionsWrap"></div>`;
+
+  const sectionsWrap = document.getElementById('sectionsWrap');
+
+  // Wire up category filter buttons
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const cat = btn.dataset.cat;
+      document.querySelectorAll('.section-block').forEach(sec => {
+        sec.style.display = (cat === 'all' || sec.dataset.cat === cat) ? '' : 'none';
+      });
+    });
+  });
+
+  // Load each section progressively
+  for (const cat of cats) {
+    const ids = lib[cat];
+    // Create placeholder block
+    const block = document.createElement('div');
+    block.className = 'section-block';
+    block.dataset.cat = cat;
+    block.innerHTML = `
+      <div class="section-title">${cat} <span class="section-count" id="cnt-${cat.replace(/\W/g,'_')}"></span></div>
+      <div class="grid" id="grid-${cat.replace(/\W/g,'_')}">
+        <div class="loading" style="padding:20px;grid-column:1/-1"><div class="spinner"></div>Loading...</div>
+      </div>`;
+    sectionsWrap.appendChild(block);
+
+    // Fetch & render asynchronously (don't await sequentially — fire in parallel)
+    (async () => {
+      const items = await fetchMany(ids);
+      const gridId = 'grid-' + cat.replace(/\W/g,'_');
+      const cntId  = 'cnt-'  + cat.replace(/\W/g,'_');
+      const grid = document.getElementById(gridId);
+      const cnt  = document.getElementById(cntId);
+      if (!grid) return;
+      if (cnt) cnt.textContent = items.length + ' titles';
+      renderGrid(items, grid);
+    })();
+  }
 }
 
 // ── Search ──
 async function execSearch(query) {
   browseContent.innerHTML = '<div class="loading"><div class="spinner"></div>Searching...</div>';
-  const data = await omdb({ s: query, type: currentTab === 'tv' ? 'series' : '' });
+  const type = currentTab === 'tv' ? 'series' : (currentTab === 'movies' ? 'movie' : '');
+  const data = await omdb({ s: query, ...(type ? { type } : {}) });
   if (data.Response === 'True') {
-    browseContent.innerHTML = `<div class="section-title">Results for "${query}"</div><div class="grid" id="srchGrid"></div>`;
+    browseContent.innerHTML = `
+      <div class="section-title">Results for "${query}" <span class="section-count">${data.Search.length} found</span></div>
+      <div class="grid" id="srchGrid"></div>`;
     renderGrid(data.Search, document.getElementById('srchGrid'));
   } else {
     browseContent.innerHTML = `<div class="loading">No results for "${query}"</div>`;
@@ -1108,7 +1606,6 @@ async function execLoadPlayer(imdbId, type) {
 }
 
 async function loadPlayer(imdbId, type) {
-  // Peek at title for breadcrumb label
   const data = await omdb({ i: imdbId });
   const label = data.Response === 'True' ? data.Title : imdbId;
   pushHistory({ type: 'player', imdbId, mediaType: type, label });
@@ -1120,7 +1617,6 @@ async function loadPlayer(imdbId, type) {
 navBackBtn.addEventListener('click', () => goToHistoryIdx(historyIdx - 1));
 navFwdBtn.addEventListener('click',  () => goToHistoryIdx(historyIdx + 1));
 
-// ── Keyboard shortcuts ──
 document.addEventListener('keydown', e => {
   if ((e.altKey || e.metaKey) && e.key === 'ArrowLeft')  { e.preventDefault(); if (!navBackBtn.disabled) navBackBtn.click(); }
   if ((e.altKey || e.metaKey) && e.key === 'ArrowRight') { e.preventDefault(); if (!navFwdBtn.disabled)  navFwdBtn.click(); }
@@ -1162,7 +1658,7 @@ document.getElementById('ttBtn').addEventListener('click', () => {
 });
 ttInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('ttBtn').click(); });
 
-// ── Back to browse (player meta button) ──
+// ── Back to browse ──
 document.getElementById('backBtn').addEventListener('click', () => {
   if (!navBackBtn.disabled) navBackBtn.click();
   else {
@@ -1182,7 +1678,7 @@ document.getElementById('fullscreenBtn').addEventListener('click', () => {
 
 // ── Watchlist ──
 let watchlist = JSON.parse(localStorage.getItem('freeflow_watchlist') || '[]');
-let currentMeta = null; // holds last loaded movie data for adding
+let currentMeta = null;
 
 function saveWatchlist() {
   localStorage.setItem('freeflow_watchlist', JSON.stringify(watchlist));
@@ -1200,12 +1696,12 @@ function renderWatchlist() {
 
   if (!count) {
     empty.style.display = 'flex';
-    // remove all items
     list.querySelectorAll('.wl-item').forEach(el => el.remove());
     return;
   }
   empty.style.display = 'none';
   list.querySelectorAll('.wl-item').forEach(el => el.remove());
+
   watchlist.forEach(item => {
     const div = document.createElement('div');
     div.className = 'wl-item';
@@ -1277,18 +1773,14 @@ document.getElementById('wlAddBtn').addEventListener('click', () => {
       addedAt: new Date().toISOString()
     });
   }
-  saveWatchlist();
-  renderWatchlist();
-  updateAddBtn();
+  saveWatchlist(); renderWatchlist(); updateAddBtn();
 });
 
 document.getElementById('wlClearBtn').addEventListener('click', () => {
   if (!watchlist.length) return;
   if (confirm('Clear entire watchlist?')) {
     watchlist = [];
-    saveWatchlist();
-    renderWatchlist();
-    updateAddBtn();
+    saveWatchlist(); renderWatchlist(); updateAddBtn();
   }
 });
 
@@ -1319,6 +1811,258 @@ document.getElementById('wlExportJSON').addEventListener('click', () => {
 });
 
 renderWatchlist();
+
+// ══════════════════════════════════════════════════════════════
+// ██████████   FREEFLOW PUBLIC API   ███████████████████████████
+// ══════════════════════════════════════════════════════════════
+// Exposed on window.FreeFlow — usable from the plugin console
+// or any imported .js plugin file.
+
+window.FreeFlow = {
+
+  // Add a brand-new category (or overwrite if exists)
+  addCategory(tab, name, ids) {
+    if (!LIBRARY[tab] || tab === 'trending') {
+      pluginLog(`addCategory: invalid tab "${tab}" (use 'movies' or 'tv')`, 'err');
+      return false;
+    }
+    if (!Array.isArray(ids)) { pluginLog('addCategory: ids must be an array', 'err'); return false; }
+    LIBRARY[tab][name] = [...new Set(ids.map(id => id.trim()).filter(id => /^tt\d+$/.test(id)))];
+    pluginLog(`✓ addCategory: added "${name}" to ${tab} with ${LIBRARY[tab][name].length} IDs`, 'ok');
+    return true;
+  },
+
+  // Append IDs into an existing category (or create it)
+  addIds(tab, cat, ids) {
+    if (!LIBRARY[tab] || tab === 'trending') {
+      pluginLog(`addIds: invalid tab "${tab}"`, 'err'); return false;
+    }
+    if (!Array.isArray(ids)) { pluginLog('addIds: ids must be an array', 'err'); return false; }
+    const valid = ids.map(id => id.trim()).filter(id => /^tt\d+$/.test(id));
+    if (!LIBRARY[tab][cat]) LIBRARY[tab][cat] = [];
+    const before = LIBRARY[tab][cat].length;
+    LIBRARY[tab][cat] = [...new Set([...LIBRARY[tab][cat], ...valid])];
+    pluginLog(`✓ addIds: added ${LIBRARY[tab][cat].length - before} new IDs to "${cat}" in ${tab}`, 'ok');
+    return true;
+  },
+
+  // Add IDs to the trending list
+  addTrending(ids) {
+    if (!Array.isArray(ids)) { pluginLog('addTrending: ids must be an array', 'err'); return false; }
+    const valid = ids.map(id => id.trim()).filter(id => /^tt\d+$/.test(id));
+    const before = LIBRARY.trending.length;
+    LIBRARY.trending = [...new Set([...LIBRARY.trending, ...valid])];
+    pluginLog(`✓ addTrending: added ${LIBRARY.trending.length - before} new IDs`, 'ok');
+    return true;
+  },
+
+  // Remove a category
+  removeCategory(tab, name) {
+    if (!LIBRARY[tab] || !LIBRARY[tab][name]) {
+      pluginLog(`removeCategory: "${name}" not found in ${tab}`, 'warn'); return false;
+    }
+    delete LIBRARY[tab][name];
+    pluginLog(`✓ removeCategory: removed "${name}" from ${tab}`, 'ok');
+    return true;
+  },
+
+  // Replace entire library
+  setLibrary(lib) {
+    if (!lib || typeof lib !== 'object') { pluginLog('setLibrary: invalid library object', 'err'); return false; }
+    if (lib.trending) LIBRARY.trending = lib.trending;
+    if (lib.movies)   Object.assign(LIBRARY.movies, lib.movies);
+    if (lib.tv)       Object.assign(LIBRARY.tv, lib.tv);
+    pluginLog('✓ setLibrary: library updated', 'ok');
+    return true;
+  },
+
+  // Get a deep copy of the current library
+  getLibrary() {
+    return JSON.parse(JSON.stringify(LIBRARY));
+  },
+
+  // Force reload the current browse tab
+  refresh() {
+    pluginLog('↺ refresh: reloading browse...', 'ok');
+    loadBrowse(currentTab);
+  },
+
+  // Log to plugin console from scripts
+  log(msg) { pluginLog(String(msg)); }
+};
+
+// ── Plugin console logger ──
+function pluginLog(msg, type = '') {
+  const log = document.getElementById('pluginLog');
+  if (!log) { console.log('[FreeFlow]', msg); return; }
+  const cls = type === 'ok' ? 'log-ok' : type === 'err' ? 'log-err' : type === 'warn' ? 'log-warn' : '';
+  const line = document.createElement('div');
+  line.className = 'log-line' + (cls ? ' ' + cls : '');
+  line.textContent = '> ' + msg;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+// ── Stats panel ──
+function updatePluginStats() {
+  const movieCount = Object.values(LIBRARY.movies).flat().length;
+  const tvCount    = Object.values(LIBRARY.tv).flat().length;
+  const movieCats  = Object.keys(LIBRARY.movies).length;
+  const tvCats     = Object.keys(LIBRARY.tv).length;
+  document.getElementById('pluginStats').innerHTML = `
+    <div class="stat-box"><div class="stat-num">${LIBRARY.trending.length}</div><div class="stat-label">Trending</div></div>
+    <div class="stat-box"><div class="stat-num">${movieCount}</div><div class="stat-label">Movie IDs · ${movieCats} cats</div></div>
+    <div class="stat-box"><div class="stat-num">${tvCount}</div><div class="stat-label">TV IDs · ${tvCats} cats</div></div>`;
+}
+
+// ── Plugin modal open/close ──
+function openPlugin() {
+  updatePluginStats();
+  document.getElementById('pluginOverlay').classList.add('open');
+}
+function closePlugin() {
+  document.getElementById('pluginOverlay').classList.remove('open');
+}
+
+document.getElementById('pluginBtn').addEventListener('click', openPlugin);
+document.getElementById('pluginClose').addEventListener('click', closePlugin);
+document.getElementById('pluginOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('pluginOverlay')) closePlugin();
+});
+
+// ── Run script ──
+document.getElementById('pluginRunBtn').addEventListener('click', () => {
+  const code = document.getElementById('pluginCode').value.trim();
+  if (!code) return;
+  const log = document.getElementById('pluginLog');
+  log.innerHTML = '';
+  pluginLog('Running script...', 'warn');
+  try {
+    // eslint-disable-next-line no-new-func
+    const fn = new Function('FreeFlow', code);
+    fn(window.FreeFlow);
+    updatePluginStats();
+  } catch(err) {
+    pluginLog('Error: ' + err.message, 'err');
+  }
+});
+
+document.getElementById('pluginClearCode').addEventListener('click', () => {
+  document.getElementById('pluginCode').value = '';
+  document.getElementById('pluginLog').innerHTML = '<div class="log-line api-comment">// Output appears here</div>';
+});
+
+document.getElementById('pluginLoadTemplate').addEventListener('click', () => {
+  document.getElementById('pluginCode').value =
+`// ── FreeFlow Library Plugin Template ──
+// Add a new movie category
+FreeFlow.addCategory('movies', 'My Picks', [
+  'tt0120737', // Lord of the Rings: Fellowship
+  'tt0167261', // Lord of the Rings: Two Towers
+  'tt0167260', // Lord of the Rings: Return of the King
+]);
+
+// Append to an existing category
+FreeFlow.addIds('tv', 'Drama', [
+  'tt5753856', // Sharp Objects
+]);
+
+// Add to trending
+FreeFlow.addTrending(['tt1160419']); // Dune
+
+// Reload the view
+FreeFlow.refresh();`;
+  pluginLog('Template loaded', 'ok');
+});
+
+// ── Import JS ──
+document.getElementById('importJsBtn').addEventListener('click', () => {
+  document.getElementById('importJsFile').click();
+});
+document.getElementById('importJsFile').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const code = ev.target.result;
+    document.getElementById('pluginCode').value = code;
+    document.getElementById('pluginLog').innerHTML = '';
+    pluginLog(`Loaded "${file.name}" (${(code.length/1024).toFixed(1)} KB) — press RUN to execute`, 'warn');
+    document.getElementById('importStatus').textContent = '✓ ' + file.name;
+    updatePluginStats();
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+// ── Import JSON ──
+document.getElementById('importJsonBtn').addEventListener('click', () => {
+  document.getElementById('importJsonFile').click();
+});
+document.getElementById('importJsonFile').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const lib = JSON.parse(ev.target.result);
+      document.getElementById('pluginLog').innerHTML = '';
+      const ok = window.FreeFlow.setLibrary(lib);
+      if (ok) {
+        document.getElementById('importStatus').textContent = '✓ ' + file.name;
+        updatePluginStats();
+        pluginLog(`Imported "${file.name}" successfully`, 'ok');
+        loadBrowse(currentTab);
+      }
+    } catch(err) {
+      pluginLog('JSON parse error: ' + err.message, 'err');
+      document.getElementById('importStatus').textContent = '✗ parse error';
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+// ── Export JS ──
+document.getElementById('exportJsBtn').addEventListener('click', () => {
+  const lib = window.FreeFlow.getLibrary();
+  const movieCats = Object.entries(lib.movies).map(([cat, ids]) =>
+    `  FreeFlow.addCategory('movies', ${JSON.stringify(cat)}, [\n    ${ids.map(id=>`'${id}'`).join(', ')}\n  ]);`
+  ).join('\n');
+  const tvCats = Object.entries(lib.tv).map(([cat, ids]) =>
+    `  FreeFlow.addCategory('tv', ${JSON.stringify(cat)}, [\n    ${ids.map(id=>`'${id}'`).join(', ')}\n  ]);`
+  ).join('\n');
+  const trendStr = lib.trending.map(id=>`'${id}'`).join(', ');
+
+  const js = `// ── FreeFlow Library Plugin ──
+// Generated: ${new Date().toISOString()}
+// Load this file in the Plugin System → Import .JS, then press RUN
+
+(function() {
+  // Clear existing categories first (optional — remove to merge instead)
+  // FreeFlow.setLibrary({ trending: [], movies: {}, tv: {} });
+
+  // Trending
+  FreeFlow.addTrending([${trendStr}]);
+
+  // Movies
+${movieCats}
+
+  // TV
+${tvCats}
+
+  FreeFlow.refresh();
+})();`;
+  downloadFile(js, 'freeflow-library.js', 'text/javascript');
+  pluginLog('✓ Exported library as .js plugin', 'ok');
+});
+
+// ── Export JSON ──
+document.getElementById('exportJsonBtn').addEventListener('click', () => {
+  const lib = window.FreeFlow.getLibrary();
+  downloadFile(JSON.stringify(lib, null, 2), 'freeflow-library.json', 'application/json');
+  pluginLog('✓ Exported library as .json', 'ok');
+});
 
 // ── Init ──
 pushHistory({ type: 'browse', tab: 'trending', label: 'Trending' });
