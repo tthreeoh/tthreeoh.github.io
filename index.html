@@ -4,2070 +4,1023 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FREEFLOW</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#e63946">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --red: #e63946;
-    --red-dim: #7a1d22;
-    --bg: #080808;
-    --surface: #111;
-    --surface2: #181818;
-    --border: #222;
-    --text: #e8e4dc;
-    --muted: #666;
+    --red: #e63946; --red-dim: #7a1d22;
+    --bg: #080808; --surface: #111; --surface2: #181818; --border: #222;
+    --text: #e8e4dc; --muted: #666;
+    --green: #4caf50; --green-dim: #1a3a1a; --yellow: #ffc107;
     --font-display: 'Bebas Neue', sans-serif;
     --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'Courier New', monospace;
   }
-
   html { font-size: 200%; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-body); overflow: hidden; }
+  .app { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
 
-  html, body {
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-body);
-    overflow: hidden;
-  }
-
-  .app {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    width: 100vw;
-  }
-
-  /* ── HEADER ── */
-  .header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 0 20px;
-    height: 52px;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-    z-index: 50;
-  }
-
-  .logo {
-    font-family: var(--font-display);
-    font-size: 26px;
-    letter-spacing: 0.05em;
-    color: var(--red);
-    flex-shrink: 0;
-  }
-
-  .tab-group {
-    display: flex;
-    gap: 4px;
-    flex-shrink: 0;
-  }
-
-  .tab {
-    background: none;
-    border: 1px solid transparent;
-    color: var(--muted);
-    font-family: var(--font-body);
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 5px 12px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
+  /* HEADER */
+  .header { display: flex; align-items: center; gap: 16px; padding: 0 20px; height: 52px; background: var(--bg); border-bottom: 1px solid var(--border); flex-shrink: 0; z-index: 50; }
+  .logo { font-family: var(--font-display); font-size: 26px; letter-spacing: 0.05em; color: var(--red); flex-shrink: 0; }
+  .tab-group { display: flex; gap: 4px; flex-shrink: 0; }
+  .tab { background: none; border: 1px solid transparent; color: var(--muted); font-family: var(--font-body); font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 12px; cursor: pointer; transition: all 0.15s; }
   .tab:hover { color: var(--text); }
-  .tab.active {
-    color: var(--red);
-    border-color: var(--red-dim);
-    background: rgba(230,57,70,0.08);
-  }
-
-  .search-wrap {
-    display: flex;
-    align-items: center;
-    flex: 1;
-    max-width: 400px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 0 12px;
-    gap: 8px;
-  }
+  .tab.active { color: var(--red); border-color: var(--red-dim); background: rgba(230,57,70,0.08); }
+  .search-wrap { display: flex; align-items: center; flex: 1; max-width: 400px; background: var(--surface); border: 1px solid var(--border); padding: 0 12px; gap: 8px; }
   .search-wrap svg { flex-shrink: 0; opacity: 0.4; }
-  .search-wrap input {
-    background: none;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font-family: var(--font-body);
-    font-size: 13px;
-    width: 100%;
-    padding: 8px 0;
-  }
+  .search-wrap input { background: none; border: none; outline: none; color: var(--text); font-family: var(--font-body); font-size: 13px; width: 100%; padding: 8px 0; }
   .search-wrap input::placeholder { color: var(--muted); }
-
-  .tt-wrap {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-left: auto;
-  }
-
-  .tt-input {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
-    padding: 6px 10px;
-    width: 120px;
-    outline: none;
-  }
+  .tt-wrap { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+  .tt-input { background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: var(--font-mono); font-size: 12px; padding: 6px 10px; width: 120px; outline: none; }
   .tt-input::placeholder { color: var(--muted); }
   .tt-input:focus { border-color: var(--red-dim); }
-
-  .btn {
-    background: var(--red);
-    border: none;
-    color: #fff;
-    font-family: var(--font-display);
-    font-size: 14px;
-    letter-spacing: 0.06em;
-    padding: 6px 14px;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
+  .btn { background: var(--red); border: none; color: #fff; font-family: var(--font-display); font-size: 14px; letter-spacing: 0.06em; padding: 6px 14px; cursor: pointer; transition: opacity 0.15s; }
   .btn:hover { opacity: 0.85; }
-
-  .btn-ghost {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: var(--font-body);
-    font-size: 11px;
-    padding: 5px 10px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
+  .btn-ghost { background: none; border: 1px solid var(--border); color: var(--muted); font-family: var(--font-body); font-size: 11px; padding: 5px 10px; cursor: pointer; transition: all 0.15s; }
   .btn-ghost:hover { border-color: var(--red-dim); color: var(--red); }
   .btn-ghost:disabled { opacity: 0.25; pointer-events: none; }
+  .btn-sm { font-size: 10px; padding: 4px 8px; }
+  .btn-green { background: var(--green); border: none; color: #fff; font-family: var(--font-display); font-size: 13px; letter-spacing: 0.06em; padding: 5px 14px; cursor: pointer; transition: opacity 0.15s; }
+  .btn-green:hover { opacity: 0.85; }
+  .hdr-btn { background: none; border: none; border-left: 1px solid var(--border); color: var(--muted); font-family: var(--font-body); font-size: 11px; padding: 5px 10px 5px 14px; cursor: pointer; transition: color 0.15s; letter-spacing: 0.04em; }
+  .hdr-btn:hover { color: var(--text); }
+  .list-badge { display: inline-flex; align-items: center; justify-content: center; background: var(--red); color: #fff; border-radius: 50%; font-size: 9px; width: 14px; height: 14px; margin-left: 4px; font-weight: 600; vertical-align: middle; line-height: 1; }
+  .key-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background 0.3s; display: inline-block; margin-left: 4px; vertical-align: middle; }
 
-  /* ── NAV BAR ── */
-  .nav-bar {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 20px;
-    height: 34px;
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-    overflow: hidden;
-  }
-
-  .nav-btn {
-    background: none;
-    border: none;
-    color: var(--muted);
-    cursor: pointer;
-    padding: 4px 6px;
-    font-size: 14px;
-    line-height: 1;
-    transition: color 0.15s;
-    flex-shrink: 0;
-  }
+  /* NAV BAR */
+  .nav-bar { display: flex; align-items: center; gap: 6px; padding: 0 20px; height: 34px; background: var(--surface2); border-bottom: 1px solid var(--border); flex-shrink: 0; overflow: hidden; }
+  .nav-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px 6px; font-size: 14px; line-height: 1; transition: color 0.15s; flex-shrink: 0; }
   .nav-btn:hover { color: var(--text); }
   .nav-btn:disabled { opacity: 0.2; pointer-events: none; }
-
   .nav-sep { color: #333; font-size: 12px; flex-shrink: 0; }
-
-  .breadcrumbs {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    overflow: hidden;
-    flex: 1;
-    min-width: 0;
-  }
-
-  .crumb {
-    font-size: 11px;
-    color: var(--muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    cursor: pointer;
-    transition: color 0.15s;
-    flex-shrink: 1;
-    min-width: 0;
-  }
+  .breadcrumbs { display: flex; align-items: center; gap: 6px; overflow: hidden; flex: 1; min-width: 0; }
+  .crumb { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: color 0.15s; flex-shrink: 1; min-width: 0; }
   .crumb:hover { color: var(--red); }
   .crumb.current { color: var(--text); cursor: default; pointer-events: none; flex-shrink: 0; }
   .crumb-sep { color: #333; font-size: 10px; flex-shrink: 0; }
 
-  /* ── MAIN ── */
-  .main {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
+  /* MAIN */
+  .main { display: flex; flex: 1; overflow: hidden; }
 
-  /* ── BROWSE PANEL ── */
-  .browse-panel {
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    padding: 20px;
-    display: none;
-  }
+  /* BROWSE */
+  .browse-panel { width: 100%; height: 100%; overflow-y: auto; padding: 20px; display: none; }
   .browse-panel.visible { display: block; }
-
-  /* Category filter bar */
-  .cat-bar {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .cat-btn {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: var(--font-body);
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
+  .cat-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+  .cat-btn { background: none; border: 1px solid var(--border); color: var(--muted); font-family: var(--font-body); font-size: 10px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; padding: 4px 10px; cursor: pointer; transition: all 0.15s; }
   .cat-btn:hover { color: var(--text); border-color: #444; }
-  .cat-btn.active {
-    color: var(--red);
-    border-color: var(--red-dim);
-    background: rgba(230,57,70,0.08);
-  }
-
-  .section-title {
-    font-family: var(--font-display);
-    font-size: 20px;
-    letter-spacing: 0.05em;
-    color: var(--text);
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .section-count {
-    font-family: var(--font-body);
-    font-size: 11px;
-    color: var(--muted);
-    font-weight: 400;
-    letter-spacing: 0.03em;
-  }
-
-  .section-block {
-    margin-bottom: 36px;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(8em, 1fr));
-    gap: 12px;
-    margin-bottom: 4px;
-  }
-
-  .card {
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    transition: transform 0.15s, border-color 0.15s;
-  }
-  .card:hover {
-    transform: translateY(-3px);
-    border-color: var(--red-dim);
-  }
+  .cat-btn.active { color: var(--red); border-color: var(--red-dim); background: rgba(230,57,70,0.08); }
+  .section-title { font-family: var(--font-display); font-size: 20px; letter-spacing: 0.05em; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .section-count { font-family: var(--font-body); font-size: 11px; color: var(--muted); font-weight: 400; }
+  .section-block { margin-bottom: 36px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(8em, 1fr)); gap: 12px; margin-bottom: 4px; }
+  .card { cursor: pointer; position: relative; overflow: hidden; background: var(--surface); border: 1px solid var(--border); transition: transform 0.15s, border-color 0.15s; }
+  .card:hover { transform: translateY(-3px); border-color: var(--red-dim); }
   .card:hover .card-overlay { opacity: 1; }
-
-  .card-overlay {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.5) 70%, transparent 100%);
-    padding: 28px 6px 6px;
-    display: flex;
-    gap: 5px;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.15s;
-  }
-
-  .card-action {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: #fff;
-    font-size: 9px;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 4px 7px;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
-    white-space: nowrap;
-    font-family: var(--font-body);
-  }
+  .card-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.5) 70%, transparent 100%); padding: 28px 6px 6px; display: flex; gap: 5px; justify-content: center; opacity: 0; transition: opacity 0.15s; }
+  .card-action { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 9px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 7px; cursor: pointer; transition: background 0.15s; white-space: nowrap; font-family: var(--font-body); }
   .card-action:hover { background: rgba(255,255,255,0.18); }
   .card-action.in-list { background: rgba(230,57,70,0.3); border-color: var(--red-dim); color: var(--red); }
-  .card-action.watched { background: rgba(76,175,80,0.25); border-color: #1a3a1a; color: #4caf50; }
-
-  .card-watched-badge {
-    position: absolute;
-    bottom: 38px; right: 6px;
-    font-size: 8px;
-    color: #4caf50;
-    background: rgba(0,0,0,0.75);
-    border: 1px solid #1a3a1a;
-    padding: 2px 5px;
-    pointer-events: none;
-    display: none;
-  }
+  .card-action.watched { background: rgba(76,175,80,0.25); border-color: var(--green-dim); color: var(--green); }
+  .card-watched-badge { position: absolute; bottom: 38px; right: 6px; font-size: 8px; color: var(--green); background: rgba(0,0,0,0.75); border: 1px solid var(--green-dim); padding: 2px 5px; pointer-events: none; display: none; }
   .card.is-watched .card-watched-badge { display: block; }
-
-  .card img {
-    width: 100%;
-    aspect-ratio: 2/3;
-    object-fit: cover;
-    display: block;
-    filter: brightness(0.9);
-  }
-
+  .card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; filter: brightness(0.9); }
   .card-info { padding: 8px; }
-
-  .card-title {
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--text);
-  }
-
-  .card-meta {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  .card-type-badge {
-    position: absolute;
-    top: 6px;
-    left: 6px;
-    font-size: 9px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 2px 5px;
-    background: rgba(0,0,0,0.75);
-    border: 1px solid var(--border);
-    color: var(--muted);
-  }
+  .card-title { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+  .card-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .card-type-badge { position: absolute; top: 6px; left: 6px; font-size: 9px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 5px; background: rgba(0,0,0,0.75); border: 1px solid var(--border); color: var(--muted); }
   .card-type-badge.tv { color: #4fc3f7; border-color: #1a4a5a; }
+  .no-poster { width: 100%; aspect-ratio: 2/3; background: var(--surface2); display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 11px; }
 
-  .no-poster {
-    width: 100%;
-    aspect-ratio: 2/3;
-    background: var(--surface2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--muted);
-    font-size: 11px;
-  }
-
-  /* ── PLAYER PANEL ── */
-  .player-panel {
-    display: none;
-    flex: 1;
-    flex-direction: column;
-    overflow: hidden;
-  }
+  /* PLAYER */
+  .player-panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
   .player-panel.visible { display: flex; }
-
-  .player-container {
-    position: relative;
-    flex: 1;
-    background: #000;
-    overflow: hidden;
-  }
-  .player-container iframe {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
-
-  .player-meta {
-    flex-shrink: 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 20px;
-    padding: 14px 20px;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-  }
-
-  .player-poster {
-    width: 56px;
-    height: 84px;
-    object-fit: cover;
-    border: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
+  .player-container { position: relative; flex: 1; background: #000; overflow: hidden; }
+  .player-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+  .player-meta { flex-shrink: 0; display: flex; align-items: flex-start; gap: 20px; padding: 14px 20px; background: var(--surface); border-top: 1px solid var(--border); }
+  .player-poster { width: 56px; height: 84px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
   .player-details { flex: 1; }
-
-  .player-title {
-    font-family: var(--font-display);
-    font-size: 22px;
-    letter-spacing: 0.04em;
-    line-height: 1.1;
-    margin-bottom: 4px;
-  }
-
-  .player-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 8px;
-  }
-
-  .ptag {
-    font-size: 11px;
-    color: var(--muted);
-    border: 1px solid var(--border);
-    padding: 2px 7px;
-  }
+  .player-title { font-family: var(--font-display); font-size: 22px; letter-spacing: 0.04em; line-height: 1.1; margin-bottom: 4px; }
+  .player-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .ptag { font-size: 11px; color: var(--muted); border: 1px solid var(--border); padding: 2px 7px; }
   .ptag.red { color: var(--red); border-color: var(--red-dim); }
-
-  .player-plot {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.5;
-    max-width: 700px;
-  }
-
-  .player-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    align-items: flex-end;
-    flex-shrink: 0;
-  }
-
-  /* ── EPISODE SELECTOR ── */
-  .episode-bar {
-    display: none;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 20px;
-    background: var(--surface2);
-    border-top: 1px solid var(--border);
-    flex-shrink: 0;
-  }
+  .player-plot { font-size: 13px; color: var(--muted); line-height: 1.5; max-width: 700px; }
+  .player-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; flex-shrink: 0; }
+  .episode-bar { display: none; align-items: center; gap: 10px; padding: 8px 20px; background: var(--surface2); border-top: 1px solid var(--border); flex-shrink: 0; }
   .episode-bar.visible { display: flex; }
   .episode-bar label { font-size: 12px; color: var(--muted); }
-  .episode-bar select {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: var(--font-body);
-    font-size: 12px;
-    padding: 4px 8px;
-    outline: none;
-    cursor: pointer;
-  }
+  .episode-bar select { background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: var(--font-body); font-size: 12px; padding: 4px 8px; outline: none; cursor: pointer; }
   .episode-bar select:focus { border-color: var(--red-dim); }
 
-  /* ── LOADING / EMPTY ── */
-  .loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
-    color: var(--muted);
-    font-size: 13px;
-    letter-spacing: 0.05em;
-  }
-
-  .spinner {
-    width: 18px; height: 18px;
-    border: 2px solid var(--border);
-    border-top-color: var(--red);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    margin-right: 10px;
-  }
+  /* LOADING */
+  .loading { display: flex; align-items: center; justify-content: center; padding: 60px 20px; color: var(--muted); font-size: 13px; letter-spacing: 0.05em; }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--red); border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 10px; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .key-wrap {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    border-left: 1px solid var(--border);
-    padding-left: 12px;
-    flex-shrink: 0;
-  }
-  .key-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--muted);
-    flex-shrink: 0;
-    transition: background 0.3s;
-  }
-
-  /* ── WATCHLIST DRAWER ── */
-  .wl-drawer {
-    position: fixed;
-    top: 0; right: -360px;
-    width: 360px;
-    height: 100vh;
-    background: var(--surface);
-    border-left: 1px solid var(--border);
-    z-index: 200;
-    display: flex;
-    flex-direction: column;
-    transition: right 0.25s cubic-bezier(.4,0,.2,1);
-  }
+  /* WATCHLIST DRAWER */
+  .wl-drawer { position: fixed; top: 0; right: -360px; width: 360px; height: 100vh; background: var(--surface); border-left: 1px solid var(--border); z-index: 200; display: flex; flex-direction: column; transition: right 0.25s cubic-bezier(.4,0,.2,1); }
   .wl-drawer.open { right: 0; }
-
-  .wl-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 199;
-  }
-  .wl-overlay.open { display: block; }
-
-  .wl-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
-  .wl-title {
-    font-family: var(--font-display);
-    font-size: 18px;
-    letter-spacing: 0.05em;
-    color: var(--text);
-  }
-
-  .wl-count {
-    font-size: 11px;
-    color: var(--muted);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 2px 7px;
-    margin-left: 8px;
-  }
-
-  .wl-close {
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 18px;
-    cursor: pointer;
-    padding: 4px 6px;
-    line-height: 1;
-    transition: color 0.15s;
-  }
-  .wl-close:hover { color: var(--red); }
-
-  .wl-actions {
-    display: flex;
-    gap: 8px;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
-  .wl-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 8px 0;
-  }
-
-  .wl-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: var(--muted);
-    font-size: 12px;
-    gap: 8px;
-    opacity: 0.5;
-  }
-
-  .wl-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 16px;
-    border-bottom: 1px solid #1a1a1a;
-    cursor: pointer;
-    transition: background 0.1s;
-  }
+  .dim-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
+  .dim-overlay.open { display: block; }
+  .wl-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .wl-title { font-family: var(--font-display); font-size: 18px; letter-spacing: 0.05em; color: var(--text); }
+  .wl-count { font-size: 11px; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); padding: 2px 7px; margin-left: 8px; }
+  .icon-close { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px 6px; line-height: 1; transition: color 0.15s; }
+  .icon-close:hover { color: var(--red); }
+  .wl-actions { display: flex; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .wl-list { flex: 1; overflow-y: auto; padding: 8px 0; }
+  .wl-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--muted); font-size: 12px; gap: 8px; opacity: 0.5; }
+  .wl-item { display: flex; align-items: center; gap: 10px; padding: 8px 16px; border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: background 0.1s; }
   .wl-item:hover { background: var(--surface2); }
-
-  .wl-item-poster {
-    width: 32px;
-    height: 48px;
-    object-fit: cover;
-    border: 1px solid var(--border);
-    flex-shrink: 0;
-    background: var(--surface2);
-  }
-
+  .wl-item-poster { width: 32px; height: 48px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; background: var(--surface2); }
   .wl-item-info { flex: 1; min-width: 0; }
-
-  .wl-item-title {
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--text);
-  }
-
-  .wl-item-meta {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  .watched-dot {
-    display: inline-block;
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: #4caf50;
-    margin-right: 4px;
-    vertical-align: middle;
-  }
-
-  .wl-item-remove {
-    background: none;
-    border: none;
-    color: #333;
-    font-size: 16px;
-    cursor: pointer;
-    padding: 4px;
-    line-height: 1;
-    flex-shrink: 0;
-    transition: color 0.15s;
-  }
-  .wl-item-remove:hover { color: var(--red); }
-
-  .wl-btn {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: var(--font-body);
-    font-size: 11px;
-    font-weight: 500;
-    padding: 5px 10px;
-    cursor: pointer;
-    transition: all 0.15s;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
+  .wl-item-title { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+  .wl-item-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .watched-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-right: 4px; vertical-align: middle; }
+  .btn-remove { background: none; border: none; color: #333; font-size: 16px; cursor: pointer; padding: 4px; line-height: 1; flex-shrink: 0; transition: color 0.15s; }
+  .btn-remove:hover { color: var(--red); }
+  .wl-btn { background: none; border: 1px solid var(--border); color: var(--muted); font-family: var(--font-body); font-size: 11px; font-weight: 500; padding: 5px 10px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.04em; text-transform: uppercase; }
   .wl-btn:hover { border-color: var(--red-dim); color: var(--red); }
 
-  .list-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--red);
-    color: #fff;
-    border-radius: 50%;
-    font-size: 9px;
-    width: 14px;
-    height: 14px;
-    margin-left: 4px;
-    font-weight: 600;
-    vertical-align: middle;
-    line-height: 1;
+  /* ════════════════════════════════════════════
+     SETTINGS DRAWER  (right side, 520px)
+     ════════════════════════════════════════════ */
+  .settings-drawer { position: fixed; top: 0; right: -540px; width: 540px; height: 100vh; background: var(--surface); border-left: 1px solid var(--border); z-index: 220; display: flex; flex-direction: column; transition: right 0.28s cubic-bezier(.4,0,.2,1); }
+  .settings-drawer.open { right: 0; }
+  .settings-dim { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 219; }
+  .settings-dim.open { display: block; }
+  .settings-hdr { display: flex; align-items: center; justify-content: space-between; padding: 0 18px; height: 52px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .settings-title { font-family: var(--font-display); font-size: 20px; letter-spacing: 0.06em; }
+  .stabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .stab { flex: 1; background: none; border: none; border-bottom: 2px solid transparent; color: var(--muted); font-family: var(--font-body); font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; padding: 10px 6px; cursor: pointer; transition: all 0.15s; }
+  .stab:hover { color: var(--text); }
+  .stab.active { color: var(--red); border-bottom-color: var(--red); }
+  .settings-body { flex: 1; overflow-y: auto; }
+  .spanel { display: none; padding: 18px; }
+  .spanel.active { display: block; }
+  .s-sec { margin-bottom: 24px; }
+  .s-sec-title { font-family: var(--font-display); font-size: 13px; letter-spacing: 0.08em; padding-bottom: 8px; margin-bottom: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .s-note { font-family: var(--font-body); font-size: 9px; color: var(--muted); letter-spacing: 0.03em; font-weight: 400; text-transform: none; }
+  .s-label { font-size: 11px; color: var(--muted); margin-bottom: 7px; line-height: 1.4; }
+  .s-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .s-input { background: var(--bg); border: 1px solid var(--border); color: var(--text); font-family: var(--font-mono); font-size: 12px; padding: 7px 10px; outline: none; flex: 1; }
+  .s-input:focus { border-color: var(--red-dim); }
+  .s-input::placeholder { color: var(--muted); }
+  .s-status { font-size: 10px; color: var(--muted); min-height: 14px; letter-spacing: 0.03em; }
+
+  /* Radio options */
+  .radio-group { display: flex; flex-direction: column; gap: 6px; }
+  .radio-opt { display: flex; align-items: flex-start; gap: 10px; padding: 9px 11px; border: 1px solid var(--border); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+  .radio-opt:hover { border-color: #444; }
+  .radio-opt.sel { border-color: var(--red-dim); background: rgba(230,57,70,0.06); }
+  .rdot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--muted); flex-shrink: 0; margin-top: 2px; transition: all 0.15s; }
+  .radio-opt.sel .rdot { border-color: var(--red); background: var(--red); }
+  .rlabel { font-size: 12px; font-weight: 500; color: var(--text); }
+  .rdesc { font-size: 10px; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+
+  /* Stats */
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stat-box { background: var(--bg); border: 1px solid var(--border); padding: 10px; text-align: center; }
+  .stat-num { font-family: var(--font-display); font-size: 22px; color: var(--red); line-height: 1; }
+  .stat-lbl { font-size: 9px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; }
+
+  /* Code / console */
+  .code-area { width: 100%; max-width: 100%; box-sizing: border-box; background: var(--bg); border: 1px solid var(--border); color: #7ec8e3; font-family: var(--font-mono); font-size: 10px; padding: 10px 12px; resize: vertical; min-height: 130px; outline: none; line-height: 1.6; overflow-x: auto; white-space: pre; }
+  .code-area:focus { border-color: var(--red-dim); }
+  .paste-area { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); font-family: var(--font-mono); font-size: 10px; padding: 10px 12px; resize: vertical; min-height: 80px; outline: none; line-height: 1.6; }
+  .paste-area:focus { border-color: var(--red-dim); }
+  .console-log { background: var(--bg); border: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; padding: 8px 10px; min-height: 60px; max-height: 140px; overflow-y: auto; line-height: 1.65; }
+  .ll { margin-bottom: 1px; color: var(--muted); }
+  .l-ok { color: var(--green); } .l-err { color: var(--red); } .l-warn { color: var(--yellow); } .l-info { color: #7ec8e3; }
+
+  /* API ref */
+  .api-ref { background: var(--bg); border: 1px solid var(--border); padding: 12px 14px; font-family: var(--font-mono); font-size: 10px; line-height: 1.85; white-space: pre-wrap; word-break: break-word; }
+  .ac { color: #555; } .af { color: #e6c97d; } .as { color: #a8cc8c; } .ak { color: #cc99cc; }
+
+  /* Placeholder boxes */
+  .pref-ph { border: 1px dashed #2a2a2a; padding: 14px; text-align: center; color: #333; font-size: 11px; letter-spacing: 0.06em; margin-bottom: 8px; }
+
+  /* File sync banner */
+  .filesync-bar {
+    display: none; align-items: center; gap: 10px; padding: 0 20px;
+    height: 32px; background: #0d1a0d; border-bottom: 1px solid #1a3a1a;
+    flex-shrink: 0; font-size: 10px; color: var(--green); letter-spacing: 0.04em;
+    font-family: var(--font-mono);
   }
+  .filesync-bar.visible { display: flex; }
+  .filesync-bar.warn { background: #1a140a; border-color: #4a3a00; color: var(--yellow); }
+  .filesync-bar.err  { background: #1a0a0a; border-color: var(--red-dim); color: var(--red); }
+  .filesync-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .filesync-dot.pulse { animation: fspulse 1.4s ease-in-out infinite; }
+  @keyframes fspulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .filesync-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: 0.7; }
+  .filesync-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .filesync-btn {
+    background: none; border: 1px solid currentColor; color: inherit;
+    font-family: var(--font-body); font-size: 9px; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 2px 7px; cursor: pointer; opacity: 0.8;
+    transition: opacity 0.15s;
+  }
+  .filesync-btn:hover { opacity: 1; }
+
+  /* File sync section in settings */
+  .filesync-status-box {
+    background: var(--bg); border: 1px solid var(--border);
+    padding: 10px 12px; font-family: var(--font-mono); font-size: 10px;
+    line-height: 1.8; margin-bottom: 10px;
+  }
+  .fss-row { display: flex; gap: 8px; align-items: center; }
+  .fss-key { color: #7ec8e3; min-width: 80px; }
+  .fss-val { color: var(--text); }
+  .fss-dim { color: var(--muted); }
+
+  /* Storage recovery modal */
+  .recovery-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 500; align-items: center; justify-content: center; }
+  .recovery-overlay.open { display: flex; }
+  .recovery-modal { background: var(--surface); border: 2px solid var(--red-dim); width: 560px; max-width: 96vw; padding: 28px; display: flex; flex-direction: column; gap: 16px; }
+  .recovery-title { font-family: var(--font-display); font-size: 22px; letter-spacing: 0.05em; color: var(--red); }
+  .recovery-body { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .recovery-detail { background: var(--bg); border: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; padding: 10px 12px; color: #7ec8e3; max-height: 120px; overflow-y: auto; line-height: 1.6; margin-top: 4px; }
+  .recovery-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* Schema info banner in settings */
+  .schema-banner { background: var(--bg); border: 1px solid var(--border); padding: 10px 12px; font-size: 10px; color: var(--muted); line-height: 1.7; font-family: var(--font-mono); }
+  .schema-row { display: flex; gap: 10px; align-items: center; }
+  .schema-key { color: #7ec8e3; min-width: 90px; }
+  .schema-ver { color: var(--green); }
+  .schema-migrated { color: var(--yellow); }
+  .schema-ok { color: var(--green); }
+
+  /* STAGING MODAL */
+  .staging-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 300; align-items: center; justify-content: center; }
+  .staging-overlay.open { display: flex; }
+  .staging-modal { background: var(--surface); border: 1px solid var(--border); width: 580px; max-width: 96vw; max-height: 88vh; display: flex; flex-direction: column; }
+  .staging-hdr { display: flex; align-items: flex-start; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .staging-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 5px; }
+  .stage-item { display: flex; align-items: center; gap: 9px; padding: 7px 9px; border: 1px solid var(--border); background: var(--surface2); }
+  .stage-poster { width: 26px; height: 39px; object-fit: cover; background: var(--bg); border: 1px solid var(--border); flex-shrink: 0; }
+  .stage-info { flex: 1; min-width: 0; }
+  .stage-title { font-size: 11px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stage-meta { font-size: 9px; color: var(--muted); margin-top: 1px; }
+  .badge { font-size: 9px; padding: 2px 5px; border: 1px solid; flex-shrink: 0; letter-spacing: 0.05em; text-transform: uppercase; }
+  .badge-new  { color: var(--green); border-color: var(--green-dim); }
+  .badge-dupe { color: var(--yellow); border-color: #4a3a00; }
+  .stage-toggle { background: none; border: 1px solid var(--border); color: var(--muted); font-size: 9px; padding: 2px 6px; cursor: pointer; flex-shrink: 0; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-body); }
+  .stage-toggle:hover { border-color: var(--red-dim); color: var(--red); }
+  .stage-toggle.excl { border-color: var(--red-dim); color: var(--red); background: rgba(230,57,70,0.1); }
+  .staging-footer { display: flex; align-items: center; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--border); flex-shrink: 0; flex-wrap: wrap; }
+  .staging-summary { font-size: 11px; color: var(--muted); flex: 1; min-width: 120px; }
+
+  /* Snippet item */
+  .snippet-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); background: var(--bg); }
+
+  /* ── MY TAB PANEL ── */
+  .my-panel {
+    display: none; flex-direction: column; width: 100%; height: 100%; overflow: hidden;
+  }
+  .my-panel.visible { display: flex; }
+
+  .my-tabs {
+    display: flex; gap: 0; border-bottom: 1px solid var(--border);
+    flex-shrink: 0; background: var(--surface2);
+  }
+  .my-tab {
+    background: none; border: none; border-bottom: 2px solid transparent;
+    color: var(--muted); font-family: var(--font-body); font-size: 11px;
+    font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 10px 16px; cursor: pointer; transition: all 0.15s;
+  }
+  .my-tab:hover { color: var(--text); }
+  .my-tab.active { color: var(--red); border-bottom-color: var(--red); }
+
+  .my-section {
+    display: none; flex: 1; overflow-y: auto; padding: 18px;
+    flex-direction: column;
+  }
+  .my-section.active { display: flex; flex-direction: column; }
+
+  .my-sec-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+  .my-sec-title {
+    font-family: var(--font-display); font-size: 18px;
+    letter-spacing: 0.05em; color: var(--text);
+  }
+  .my-sec-count {
+    font-size: 11px; color: var(--muted);
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 2px 8px;
+  }
+  .my-grid { margin-bottom: 0; }
+  .my-empty {
+    display: none; padding: 40px 20px; text-align: center;
+    color: var(--muted); font-size: 12px; letter-spacing: 0.04em;
+  }
+  .my-empty.visible { display: block; }
+
+  /* Favorites star on cards */
+  .card-fav {
+    position: absolute; top: 6px; right: 6px;
+    background: rgba(0,0,0,0.7); border: 1px solid transparent;
+    color: var(--muted); font-size: 13px; cursor: pointer;
+    width: 24px; height: 24px; display: flex; align-items: center;
+    justify-content: center; transition: all 0.15s; line-height: 1;
+    z-index: 2;
+  }
+  .card-fav:hover { color: gold; border-color: #666; }
+  .card-fav.active { color: gold; border-color: #666; background: rgba(0,0,0,0.85); }
+
+  /* Queue rows */
+  .queue-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border: 1px solid var(--border);
+    background: var(--surface2); margin-bottom: 4px;
+    cursor: grab; transition: background 0.1s;
+  }
+  .queue-item:hover { background: var(--surface); }
+  .queue-item.dragging { opacity: 0.4; }
+  .queue-item.drag-over { border-color: var(--red-dim); background: rgba(230,57,70,0.06); }
+  .queue-poster {
+    width: 28px; height: 42px; object-fit: cover;
+    border: 1px solid var(--border); flex-shrink: 0; background: var(--bg);
+  }
+  .queue-info { flex: 1; min-width: 0; }
+  .queue-title {
+    font-size: 12px; font-weight: 500; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .queue-meta { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .queue-continue {
+    font-size: 9px; color: #4fc3f7; border: 1px solid #1a3a4a;
+    background: rgba(79,195,247,0.08); padding: 2px 6px;
+    letter-spacing: 0.05em; text-transform: uppercase; flex-shrink: 0;
+  }
+  .queue-watched { color: var(--green); }
+  .queue-drag-handle {
+    color: #333; font-size: 14px; cursor: grab; flex-shrink: 0;
+    padding: 0 4px; user-select: none;
+  }
+  .queue-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .queue-btn {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    font-size: 9px; padding: 2px 6px; cursor: pointer;
+    font-family: var(--font-body); letter-spacing: 0.05em; text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .queue-btn:hover { border-color: var(--red-dim); color: var(--red); }
+  .queue-btn.green { color: var(--green); border-color: var(--green-dim); }
+  .queue-btn.green:hover { background: rgba(76,175,80,0.1); }
+
+  /* History rows */
+  .history-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 10px; border-bottom: 1px solid #1a1a1a;
+    transition: background 0.1s; cursor: pointer;
+  }
+  .history-item:hover { background: var(--surface2); }
+  .history-poster {
+    width: 24px; height: 36px; object-fit: cover;
+    border: 1px solid var(--border); flex-shrink: 0; background: var(--bg);
+  }
+  .history-info { flex: 1; min-width: 0; }
+  .history-title {
+    font-size: 11px; font-weight: 500; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .history-meta { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .history-date { font-size: 10px; color: #444; flex-shrink: 0; font-family: var(--font-mono); }
+
+  /* Groups */
+  .group-node {
+    margin-bottom: 6px;
+  }
+  .group-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; background: var(--surface2);
+    border: 1px solid var(--border); cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .group-header:hover { border-color: #444; }
+  .group-color-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .group-name {
+    flex: 1; font-size: 12px; font-weight: 500; color: var(--text);
+  }
+  .group-meta { font-size: 10px; color: var(--muted); }
+  .group-chevron { color: var(--muted); font-size: 10px; flex-shrink: 0; transition: transform 0.15s; }
+  .group-chevron.open { transform: rotate(90deg); }
+  .group-actions { display: flex; gap: 4px; }
+  .group-btn {
+    background: none; border: 1px solid transparent; color: var(--muted);
+    font-size: 10px; padding: 2px 5px; cursor: pointer; transition: all 0.15s;
+  }
+  .group-btn:hover { border-color: var(--red-dim); color: var(--red); }
+  .group-children {
+    display: none; padding: 4px 0 4px 16px; border-left: 1px solid var(--border);
+    margin-left: 18px;
+  }
+  .group-children.open { display: block; }
+  .group-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; font-size: 11px; color: var(--muted);
+    border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: color 0.1s;
+  }
+  .group-item:hover { color: var(--text); }
+  .group-item-poster {
+    width: 18px; height: 27px; object-fit: cover;
+    border: 1px solid var(--border); flex-shrink: 0; background: var(--bg);
+  }
+  .group-item-title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .group-item-remove {
+    background: none; border: none; color: #333; font-size: 12px;
+    cursor: pointer; flex-shrink: 0; transition: color 0.15s;
+  }
+  .group-item-remove:hover { color: var(--red); }
+
+  /* Group modal */
+  .group-modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8); z-index: 400;
+    align-items: center; justify-content: center;
+  }
+  .group-modal-overlay.open { display: flex; }
+  .group-modal {
+    background: var(--surface); border: 1px solid var(--border);
+    width: 420px; max-width: 96vw; padding: 22px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .group-modal-title {
+    font-family: var(--font-display); font-size: 17px; letter-spacing: 0.05em;
+  }
+
+  .group-color-opt {
+    width: 20px; height: 20px; border-radius: 50%; border: 2px solid transparent;
+    cursor: pointer; flex-shrink: 0; transition: border-color 0.15s, transform 0.15s;
+  }
+  .group-color-opt:hover { transform: scale(1.15); }
+  .group-color-opt.active { border-color: white; transform: scale(1.15); }
 
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
   ::-webkit-scrollbar-thumb:hover { background: #444; }
-
-  /* ── PLUGIN MODAL ── */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.75);
-    z-index: 300;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    width: 560px;
-    max-width: 95vw;
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
-  .modal-title {
-    font-family: var(--font-display);
-    font-size: 18px;
-    letter-spacing: 0.05em;
-    color: var(--text);
-  }
-
-  .modal-subtitle {
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-left: 10px;
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 18px;
-    cursor: pointer;
-    padding: 4px 6px;
-    line-height: 1;
-    transition: color 0.15s;
-  }
-  .modal-close:hover { color: var(--red); }
-
-  .modal-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-  }
-
-  .plugin-section {
-    border: 1px solid var(--border);
-    padding: 14px;
-  }
-
-  .plugin-section-title {
-    font-family: var(--font-display);
-    font-size: 14px;
-    letter-spacing: 0.06em;
-    color: var(--text);
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .plugin-section-title span {
-    font-family: var(--font-body);
-    font-size: 10px;
-    color: var(--muted);
-    font-weight: 400;
-    letter-spacing: 0.03em;
-    text-transform: none;
-  }
-
-  .plugin-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-
-  .plugin-code {
-    flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: #7ec8e3;
-    font-family: 'Courier New', monospace;
-    font-size: 10px;
-    padding: 8px 10px;
-    resize: vertical;
-    min-height: 120px;
-    outline: none;
-    line-height: 1.5;
-  }
-  .plugin-code:focus { border-color: var(--red-dim); }
-
-  .plugin-log {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: 'Courier New', monospace;
-    font-size: 10px;
-    padding: 8px 10px;
-    min-height: 60px;
-    max-height: 120px;
-    overflow-y: auto;
-    line-height: 1.6;
-  }
-
-  .log-line { margin-bottom: 2px; }
-  .log-ok   { color: #4caf50; }
-  .log-warn { color: #ffc107; }
-  .log-err  { color: var(--red); }
-
-  .plugin-btn-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .modal-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-
-  .stat-box {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    padding: 10px;
-    text-align: center;
-  }
-  .stat-num {
-    font-family: var(--font-display);
-    font-size: 22px;
-    color: var(--red);
-    letter-spacing: 0.04em;
-    line-height: 1;
-  }
-  .stat-label {
-    font-size: 9px;
-    color: var(--muted);
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    margin-top: 4px;
-  }
-
-  .api-ref {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    padding: 10px 12px;
-    font-family: 'Courier New', monospace;
-    font-size: 10px;
-    color: #7ec8e3;
-    line-height: 1.7;
-  }
-  .api-comment { color: #555; }
-  .api-fn      { color: #e6c97d; }
-  .api-str     { color: #a8cc8c; }
 </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- HEADER -->
-  <header class="header">
-    <div class="logo">FREEFLOW</div>
-
-    <div class="tab-group">
-      <button class="tab active" data-tab="trending">Trending</button>
-      <button class="tab" data-tab="movies">Movies</button>
-      <button class="tab" data-tab="tv">TV Shows</button>
-    </div>
-
-    <div class="search-wrap">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-      </svg>
-      <input id="searchInput" type="text" placeholder="Search movies & TV..." autocomplete="off">
-    </div>
-
-    <div class="tt-wrap">
-      <input id="ttInput" class="tt-input" type="text" placeholder="tt0052077" maxlength="20">
-      <button class="btn" id="ttBtn">PLAY</button>
-    </div>
-
-    <div class="key-wrap" title="OMDB API Key">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.4;flex-shrink:0"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-      <input id="keyInput" class="tt-input" type="password" placeholder="OMDB key" style="width:90px">
-      <button class="btn-ghost" id="keyBtn">SET</button>
-      <span class="key-dot" id="keyDot" title="No key set"></span>
-    </div>
-
-    <button class="btn-ghost" id="pluginBtn" style="border-left:1px solid var(--border);padding-left:14px;margin-left:2px;border-radius:0;border-top:none;border-bottom:none;border-right:none;" title="Library Plugin System">
-      ⚡ PLUGIN
-    </button>
-
-    <button class="btn-ghost" id="wlOpenBtn" style="border-left:1px solid var(--border);padding-left:14px;margin-left:2px;border-radius:0;border-top:none;border-bottom:none;border-right:none;">
-      ☰ LIST <span class="list-badge" id="wlBadge" style="display:none">0</span>
-    </button>
-  </header>
-
-  <!-- WATCHLIST DRAWER -->
-  <div class="wl-overlay" id="wlOverlay"></div>
-  <div class="wl-drawer" id="wlDrawer">
-    <div class="wl-header">
-      <div style="display:flex;align-items:center">
-        <span class="wl-title">WATCHLIST</span>
-        <span class="wl-count" id="wlCount">0 titles</span>
-      </div>
-      <button class="wl-close" id="wlCloseBtn">✕</button>
-    </div>
-    <div class="wl-actions">
-      <button class="wl-btn" id="wlExportCSV">↓ CSV</button>
-      <button class="wl-btn" id="wlExportJSON">↓ JSON</button>
-      <button class="wl-btn" id="wlClearBtn" style="margin-left:auto;color:#555">CLEAR ALL</button>
-    </div>
-    <div class="wl-list" id="wlList">
-      <div class="wl-empty" id="wlEmpty">
-        <div style="font-size:24px">📋</div>
-        <div>Your list is empty</div>
-        <div style="font-size:10px">Add titles while watching</div>
-      </div>
-    </div>
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">FREEFLOW</div>
+  <div class="tab-group">
+    <button class="tab active" data-tab="trending">Trending</button>
+    <button class="tab" data-tab="movies">Movies</button>
+    <button class="tab" data-tab="tv">TV Shows</button>
+    <button class="tab" data-tab="my">MY ★</button>
   </div>
-
-  <!-- PLUGIN MODAL -->
-  <div class="modal-overlay" id="pluginOverlay">
-    <div class="modal" id="pluginModal">
-      <div class="modal-header">
-        <div style="display:flex;align-items:baseline">
-          <span class="modal-title">PLUGIN SYSTEM</span>
-          <span class="modal-subtitle">window.FreeFlow API</span>
-        </div>
-        <button class="modal-close" id="pluginClose">✕</button>
-      </div>
-      <div class="modal-body">
-
-        <!-- Stats -->
-        <div class="modal-stats" id="pluginStats"></div>
-
-        <!-- API Reference -->
-        <div class="plugin-section">
-          <div class="plugin-section-title">API REFERENCE <span>available on window.FreeFlow</span></div>
-          <div class="api-ref">
-<span class="api-comment">// Add a new category with IDs</span>
-<span class="api-fn">FreeFlow.addCategory</span>(<span class="api-str">'movies'</span>, <span class="api-str">'My Picks'</span>, [<span class="api-str">'tt0120737'</span>, ...])
-
-<span class="api-comment">// Append IDs to an existing category</span>
-<span class="api-fn">FreeFlow.addIds</span>(<span class="api-str">'tv'</span>, <span class="api-str">'Drama'</span>, [<span class="api-str">'tt0944947'</span>, ...])
-
-<span class="api-comment">// Add IDs to trending</span>
-<span class="api-fn">FreeFlow.addTrending</span>([<span class="api-str">'tt9362722'</span>, ...])
-
-<span class="api-comment">// Remove a category entirely</span>
-<span class="api-fn">FreeFlow.removeCategory</span>(<span class="api-str">'movies'</span>, <span class="api-str">'My Picks'</span>)
-
-<span class="api-comment">// Replace whole library (trending + movies + tv)</span>
-<span class="api-fn">FreeFlow.setLibrary</span>(libraryObject)
-
-<span class="api-comment">// Get current library (for export)</span>
-<span class="api-fn">FreeFlow.getLibrary</span>()
-
-<span class="api-comment">// Reload the current browse view</span>
-<span class="api-fn">FreeFlow.refresh</span>()</div>
-        </div>
-
-        <!-- Run JS -->
-        <div class="plugin-section">
-          <div class="plugin-section-title">RUN SCRIPT <span>execute JS with FreeFlow API access</span></div>
-          <textarea class="plugin-code" id="pluginCode" spellcheck="false" placeholder="// Example:
-FreeFlow.addCategory('movies', 'My Picks', ['tt0120737', 'tt0468569']);
-FreeFlow.refresh();"></textarea>
-          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-            <button class="btn" id="pluginRunBtn">▶ RUN</button>
-            <button class="btn-ghost" id="pluginClearCode">CLEAR</button>
-            <button class="btn-ghost" id="pluginLoadTemplate">LOAD TEMPLATE</button>
-          </div>
-          <div style="margin-top:10px;font-size:10px;color:var(--muted);letter-spacing:0.04em">CONSOLE</div>
-          <div class="plugin-log" id="pluginLog"><div class="log-line api-comment">// Output appears here</div></div>
-        </div>
-
-        <!-- Import -->
-        <div class="plugin-section">
-          <div class="plugin-section-title">IMPORT LIBRARY <span>load .js plugin or .json data file</span></div>
-          <div class="plugin-btn-row">
-            <button class="btn-ghost" id="importJsBtn">↑ IMPORT .JS</button>
-            <button class="btn-ghost" id="importJsonBtn">↑ IMPORT .JSON</button>
-            <input type="file" id="importJsFile" accept=".js" style="display:none">
-            <input type="file" id="importJsonFile" accept=".json" style="display:none">
-            <span id="importStatus" style="font-size:10px;color:var(--muted);align-self:center"></span>
-          </div>
-        </div>
-
-        <!-- Export -->
-        <div class="plugin-section">
-          <div class="plugin-section-title">EXPORT LIBRARY <span>save current library to file</span></div>
-          <div class="plugin-btn-row">
-            <button class="btn-ghost" id="exportJsBtn">↓ EXPORT .JS</button>
-            <button class="btn-ghost" id="exportJsonBtn">↓ EXPORT .JSON</button>
-          </div>
-        </div>
-
-      </div>
-    </div>
+  <div class="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="searchInput" type="text" placeholder="Search movies & TV..." autocomplete="off">
   </div>
-
-  <!-- NAV BAR -->
-  <div class="nav-bar">
-    <button class="nav-btn" id="navBack" title="Back" disabled>&#8592;</button>
-    <button class="nav-btn" id="navFwd" title="Forward" disabled>&#8594;</button>
-    <div class="nav-sep">|</div>
-    <div class="breadcrumbs" id="breadcrumbs"></div>
+  <div class="tt-wrap">
+    <input id="ttInput" class="tt-input" type="text" placeholder="tt0052077" maxlength="20">
+    <button class="btn" id="ttBtn">PLAY</button>
   </div>
+  <button class="hdr-btn" id="settingsBtn">⚙ SETTINGS <span class="key-dot" id="keyDot"></span></button>
+  <button class="hdr-btn" id="wlOpenBtn">☰ LIST <span class="list-badge" id="wlBadge" style="display:none">0</span></button>
+</header>
 
-  <!-- MAIN -->
-  <main class="main">
-
-    <!-- BROWSE -->
-    <div class="browse-panel visible" id="browsePanel">
-      <div id="browseContent"><div class="loading"><div class="spinner"></div>Loading...</div></div>
-    </div>
-
-    <!-- PLAYER -->
-    <div class="player-panel" id="playerPanel">
-      <div class="player-container">
-        <iframe id="playerIframe"
-          src=""
-          allowfullscreen="true"
-          webkitallowfullscreen="true"
-          mozallowfullscreen="true"
-          allow="autoplay; fullscreen; picture-in-picture"
-          frameborder="0"
-          scrolling="no">
-        </iframe>
-      </div>
-
-      <div class="episode-bar" id="episodeBar">
-        <label>Season</label>
-        <select id="seasonSel"></select>
-        <label>Episode</label>
-        <select id="episodeSel"></select>
-        <button class="btn" id="epPlayBtn">PLAY EPISODE</button>
-      </div>
-
-      <div class="player-meta">
-        <img id="playerPoster" class="player-poster" src="" alt="">
-        <div class="player-details">
-          <div class="player-title" id="playerTitle">—</div>
-          <div class="player-tags" id="playerTags"></div>
-          <div class="player-plot" id="playerPlot"></div>
-        </div>
-        <div class="player-actions">
-          <button class="btn-ghost" id="backBtn">← BROWSE</button>
-          <button class="btn-ghost" id="wlAddBtn">+ ADD TO LIST</button>
-          <button class="btn-ghost" id="fullscreenBtn">⛶ FULLSCREEN</button>
-        </div>
-      </div>
-    </div>
-
-  </main>
+<!-- FILE SYNC BAR (shown when file mode is active) -->
+<div class="filesync-bar" id="fileSyncBar">
+  <div class="filesync-dot" id="fileSyncDot"></div>
+  <span id="fileSyncMsg">File sync active</span>
+  <span class="filesync-path" id="fileSyncPath"></span>
+  <div class="filesync-actions">
+    <button class="filesync-btn" id="fileSyncSaveNow">SAVE NOW</button>
+    <button class="filesync-btn" id="fileSyncReload">RELOAD FROM FILE</button>
+    <button class="filesync-btn" id="fileSyncDetach">DETACH</button>
+  </div>
 </div>
 
-<script>
-const OMDB_KEY = 'trilogy';
+<!-- WATCHLIST -->
+<div class="dim-overlay" id="wlOverlay"></div>
+<div class="wl-drawer" id="wlDrawer">
+  <div class="wl-header">
+    <div style="display:flex;align-items:center"><span class="wl-title">WATCHLIST</span><span class="wl-count" id="wlCount">0 titles</span></div>
+    <button class="icon-close" id="wlCloseBtn">✕</button>
+  </div>
+  <div class="wl-actions">
+    <button class="wl-btn" id="wlExportCSV">↓ CSV</button>
+    <button class="wl-btn" id="wlExportJSON">↓ JSON</button>
+    <button class="wl-btn" id="wlClearBtn" style="margin-left:auto;color:#555">CLEAR</button>
+  </div>
+  <div class="wl-list" id="wlList">
+    <div class="wl-empty" id="wlEmpty"><div style="font-size:24px">📋</div><div>Your list is empty</div><div style="font-size:10px">Add titles while watching</div></div>
+  </div>
+</div>
 
-// ── Elements ──
-const browsePanel  = document.getElementById('browsePanel');
-const playerPanel  = document.getElementById('playerPanel');
-const browseContent= document.getElementById('browseContent');
-const playerIframe = document.getElementById('playerIframe');
-const playerTitle  = document.getElementById('playerTitle');
-const playerTags   = document.getElementById('playerTags');
-const playerPlot   = document.getElementById('playerPlot');
-const playerPoster = document.getElementById('playerPoster');
-const episodeBar   = document.getElementById('episodeBar');
-const seasonSel    = document.getElementById('seasonSel');
-const episodeSel   = document.getElementById('episodeSel');
-const searchInput  = document.getElementById('searchInput');
-const ttInput      = document.getElementById('ttInput');
-const navBackBtn   = document.getElementById('navBack');
-const navFwdBtn    = document.getElementById('navFwd');
-const breadcrumbs  = document.getElementById('breadcrumbs');
-const keyInput     = document.getElementById('keyInput');
-const keyDot       = document.getElementById('keyDot');
+<!-- SETTINGS DRAWER -->
+<div class="settings-dim" id="settingsDim"></div>
+<div class="settings-drawer" id="settingsDrawer">
+  <div class="settings-hdr">
+    <span class="settings-title">SETTINGS</span>
+    <button class="icon-close" id="settingsClose">✕</button>
+  </div>
+  <div class="stabs">
+    <button class="stab active" data-stab="general">General</button>
+    <button class="stab" data-stab="library">Library</button>
+    <button class="stab" data-stab="plugin">Plugin</button>
+    <button class="stab" data-stab="apiref">API Ref</button>
+  </div>
+  <div class="settings-body">
 
-// ── API key management ──
-let omdbKey = localStorage.getItem('omdb_key') || OMDB_KEY;
-
-function updateKeyUI(valid) {
-  keyDot.style.background = valid ? '#4caf50' : '#666';
-  keyDot.title = valid ? 'Key active' : 'No key set';
-}
-if (localStorage.getItem('omdb_key')) {
-  keyInput.value = localStorage.getItem('omdb_key');
-  updateKeyUI(true);
-}
-
-document.getElementById('keyBtn').addEventListener('click', async () => {
-  const val = keyInput.value.trim();
-  if (!val) return;
-  const test = await fetch(`https://www.omdbapi.com/?apikey=${val}&i=tt0052077`).then(r => r.json());
-  if (test.Response === 'True') {
-    omdbKey = val;
-    localStorage.setItem('omdb_key', val);
-    updateKeyUI(true);
-    loadBrowse(currentTab);
-  } else {
-    updateKeyUI(false);
-    keyDot.style.background = '#e63946';
-    keyDot.title = 'Invalid key';
-  }
-});
-keyInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('keyBtn').click(); });
-
-// ── History stack ──
-let history = [];
-let historyIdx = -1;
-let navigating = false;
-
-function pushHistory(entry) {
-  if (navigating) return;
-  history = history.slice(0, historyIdx + 1);
-  history.push(entry);
-  historyIdx = history.length - 1;
-  updateNavUI();
-}
-
-function updateNavUI() {
-  navBackBtn.disabled = historyIdx <= 0;
-  navFwdBtn.disabled  = historyIdx >= history.length - 1;
-  renderBreadcrumbs();
-}
-
-function renderBreadcrumbs() {
-  if (!history.length) { breadcrumbs.innerHTML = ''; return; }
-  const start = Math.max(0, historyIdx - 4);
-  const visible = history.slice(start, historyIdx + 1);
-  breadcrumbs.innerHTML = visible.map((e, i) => {
-    const realIdx = start + i;
-    const isCurrent = realIdx === historyIdx;
-    const sep = i > 0 ? '<span class="crumb-sep">›</span>' : '';
-    return `${sep}<span class="crumb${isCurrent ? ' current' : ''}" data-idx="${realIdx}">${e.label}</span>`;
-  }).join('');
-  breadcrumbs.querySelectorAll('.crumb:not(.current)').forEach(el => {
-    el.addEventListener('click', () => goToHistoryIdx(parseInt(el.dataset.idx)));
-  });
-}
-
-async function goToHistoryIdx(idx) {
-  if (idx < 0 || idx >= history.length) return;
-  historyIdx = idx;
-  navigating = true;
-  await replayEntry(history[idx]);
-  navigating = false;
-  updateNavUI();
-}
-
-async function replayEntry(entry) {
-  if (entry.type === 'browse') {
-    document.querySelectorAll('.tab').forEach(t => {
-      t.classList.toggle('active', t.dataset.tab === entry.tab);
-    });
-    currentTab = entry.tab;
-    currentCategory = entry.category || null;
-    searchInput.value = '';
-    showBrowse();
-    await loadBrowse(entry.tab);
-  } else if (entry.type === 'search') {
-    searchInput.value = entry.query;
-    showBrowse();
-    await execSearch(entry.query);
-  } else if (entry.type === 'player') {
-    showPlayer();
-    await execLoadPlayer(entry.imdbId, entry.mediaType);
-  }
-}
-
-// ── State ──
-let currentTab = 'trending';
-let currentCategory = null;
-let searchTimer = null;
-
-// ── Panel toggles ──
-function showBrowse() {
-  browsePanel.classList.add('visible');
-  playerPanel.classList.remove('visible');
-}
-function showPlayer() {
-  browsePanel.classList.remove('visible');
-  playerPanel.classList.add('visible');
-}
-
-// ── OMDB fetch ──
-async function omdb(params) {
-  const url = new URL('https://www.omdbapi.com/');
-  url.searchParams.set('apikey', omdbKey);
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-  const r = await fetch(url);
-  return r.json();
-}
-
-// ═══════════════════════════════════════════════════════════════
-// ██████████████   CONTENT LIBRARY   ████████████████████████████
-// ═══════════════════════════════════════════════════════════════
-
-const LIBRARY = {
-
-  // ── TRENDING (mixed) ──
-  trending: [
-    'tt9362722','tt1375666','tt0816692','tt0468569','tt0111161',
-    'tt0137523','tt0120737','tt0110912','tt0944947','tt5491994',
-    'tt0903747','tt2861424','tt4574334','tt0386676','tt1520211',
-    'tt6751668','tt1853728','tt4154796','tt2395427','tt3501632',
-    'tt4154756','tt3480822','tt6045800','tt7286456','tt1856101',
-    'tt0499549','tt1375666','tt1270797','tt0993846','tt0816692',
-  ],
-
-  // ── MOVIES by Category ──
-  movies: {
-    'All-Time Greatest': [
-      'tt0111161','tt0068646','tt0071562','tt0468569','tt0050083',
-      'tt0108052','tt0167260','tt0110912','tt0120737','tt0060196',
-      'tt0137523','tt1375666','tt0109830','tt0816692','tt0133093',
-      'tt0099685','tt0073486','tt0076759','tt0080684','tt0082971',
-    ],
-    'Action & Adventure': [
-      'tt4154796','tt2395427','tt3501632','tt4154756','tt0499549',
-      'tt1745960','tt3896198','tt0468569','tt0082971','tt0119217',
-      'tt2527336','tt0258463','tt0172495','tt0816692','tt0209144',
-      'tt2380307','tt3315342','tt0103064','tt0317248','tt1570827',
-    ],
-    'Sci-Fi & Fantasy': [
-      'tt0076759','tt0080684','tt0086190','tt0133093','tt0816692',
-      'tt1375666','tt0109830','tt0083658','tt0910970','tt0407304',
-      'tt1375666','tt0395169','tt0470752','tt1483013','tt2543164',
-      'tt2250912','tt1856101','tt3748528','tt0414993','tt0120382',
-    ],
-    'Drama & Awards': [
-      'tt0111161','tt0068646','tt0108052','tt0050083','tt0073486',
-      'tt0099685','tt0167260','tt1853728','tt0405094','tt0361748',
-      'tt1305806','tt0993846','tt0477347','tt0119488','tt0266543',
-      'tt0887912','tt0120689','tt4116284','tt1832382','tt2278388',
-    ],
-    'Comedy': [
-      'tt0137523','tt0109830','tt2527338','tt1099212','tt0118715',
-      'tt0107048','tt0107290','tt0910936','tt1631867','tt0368226',
-      'tt0361862','tt2674426','tt0944835','tt1270798','tt0116282',
-      'tt1386703','tt0822832','tt4481514','tt3748528','tt0482571',
-    ],
-    'Horror & Thriller': [
-      'tt0081505','tt0073195','tt0114369','tt1179891','tt6751668',
-      'tt7286456','tt0167404','tt1745960','tt0910936','tt2380307',
-      'tt0387564','tt1877832','tt0093058','tt0043631','tt0119488',
-      'tt0181875','tt0120586','tt2802850','tt1375666','tt2119532',
-    ],
-    'Romance': [
-      'tt0109830','tt0758758','tt0268978','tt0295297','tt0245429',
-      'tt0338013','tt0112462','tt0120338','tt0381681','tt1375666',
-      'tt0266543','tt0120905','tt0435761','tt1951265','tt0454921',
-      'tt1727776','tt0816692','tt0120689','tt1020536','tt2562232',
-    ],
-    'Animation': [
-      'tt0910970','tt0266543','tt0245429','tt0435761','tt0317219',
-      'tt0120363','tt0119217','tt1790809','tt0892769','tt2096673',
-      'tt2294629','tt0382932','tt5013056','tt4048272','tt2380307',
-      'tt2709768','tt4649466','tt0325980','tt3606756','tt6105098',
-    ],
-    'Crime & Heist': [
-      'tt0068646','tt0071562','tt0110912','tt0099685','tt0209144',
-      'tt0482571','tt0172495','tt0986264','tt0467406','tt0361862',
-      'tt2267998','tt0395169','tt0317705','tt0163025','tt0780504',
-      'tt1305806','tt1800241','tt1227926','tt0361748','tt0758758',
-    ],
-    'War & History': [
-      'tt0108052','tt0060196','tt0266697','tt0364569','tt0361748',
-      'tt1853728','tt0119643','tt0338013','tt0116231','tt1418815',
-      'tt0405094','tt0318462','tt2179136','tt2802850','tt1535109',
-      'tt0172495','tt2024544','tt3011894','tt2737304','tt0758573',
-    ],
-    'Classic Cinema': [
-      'tt0050083','tt0073486','tt0041959','tt0033467','tt0047396',
-      'tt0043014','tt0056592','tt0047478','tt0051201','tt0042876',
-      'tt0052077','tt0054215','tt0034583','tt0031381','tt0027977',
-      'tt0053125','tt0064116','tt0056172','tt0058946','tt0066206',
-    ],
-    'Documentary': [
-      'tt1950186','tt1528133','tt1907360','tt2433392','tt0094964',
-      'tt4179452','tt2872718','tt2543472','tt0097523','tt1598642',
-      'tt3521810','tt0405159','tt6769208','tt4901364','tt2402927',
-      'tt0283877','tt0816692','tt3110958','tt1016247','tt7125860',
-    ],
-  },
-
-  // ── TV by Category ──
-  tv: {
-    'Essential TV': [
-      'tt0944947','tt0903747','tt5491994','tt2861424','tt4574334',
-      'tt0386676','tt1520211','tt0804484','tt3032476','tt2306299',
-      'tt6468322','tt7366338','tt1877514','tt0460649','tt0108778',
-    ],
-    'Drama': [
-      'tt0944947','tt0903747','tt2861424','tt6468322','tt7366338',
-      'tt1877514','tt0804484','tt0475784','tt1266020','tt2356777',
-      'tt0455275','tt1520211','tt4574334','tt2788316','tt7767422',
-      'tt4016454','tt5753856','tt0285403','tt0141842','tt3107288',
-    ],
-    'Comedy': [
-      'tt0386676','tt0460649','tt0108778','tt3032476','tt0098904',
-      'tt1733785','tt2306299','tt0367279','tt0077975','tt0096697',
-      'tt2575988','tt0072562','tt2861424','tt2442560','tt5753856',
-      'tt0115167','tt0052048','tt0185906','tt0290978','tt4574334',
-    ],
-    'Crime & Mystery': [
-      'tt2802850','tt3032476','tt2261391','tt3006802','tt2193021',
-      'tt1475582','tt2707408','tt3086114','tt5753856','tt0118421',
-      'tt0773262','tt0412142','tt1119644','tt2661044','tt4532368',
-      'tt0407362','tt1632701','tt4158110','tt5788792','tt3510070',
-    ],
-    'Sci-Fi & Fantasy': [
-      'tt5491994','tt0141842','tt4574334','tt6468322','tt0436992',
-      'tt4158110','tt7767422','tt1196946','tt0898266','tt1520211',
-      'tt5421602','tt3322314','tt0773262','tt1831804','tt4786824',
-      'tt1266020','tt2357547','tt2707408','tt0475784','tt0115226',
-    ],
-    'Thriller & Suspense': [
-      'tt7366338','tt1877514','tt0804484','tt2356777','tt4016454',
-      'tt0475784','tt2788316','tt2661044','tt1454029','tt7587890',
-      'tt6048596','tt2210044','tt5925154','tt5155780','tt0285403',
-      'tt5040012','tt2193021','tt3343028','tt3717490','tt1219024',
-    ],
-    'Anime': [
-      'tt0988824','tt0409591','tt2560140','tt1266020','tt2394629',
-      'tt0434409','tt0245429','tt1515189','tt0417299','tt2560140',
-      'tt0354058','tt0161952','tt0388629','tt0291358','tt1407836',
-      'tt1618448','tt0214341','tt2560752','tt3006802','tt0078588',
-    ],
-    'Reality & Documentary': [
-      'tt0903747','tt1831801','tt4955642','tt1798819','tt2741602',
-      'tt8819118','tt3659388','tt4786824','tt1586680','tt4768902',
-      'tt5788792','tt1477834','tt5714970','tt3006802','tt7816918',
-      'tt0423238','tt3749900','tt1723816','tt5779842','tt0115168',
-    ],
-    'Kids & Family': [
-      'tt0096697','tt0052048','tt0074028','tt0078987','tt0367279',
-      'tt0898266','tt0112230','tt0472027','tt1262464','tt0285463',
-      'tt4477976','tt0148713','tt3398228','tt0121955','tt1316669',
-      'tt0381798','tt0083443','tt0052048','tt0362270','tt0115267',
-    ],
-    'Limited Series': [
-      'tt0141842','tt1475582','tt7587890','tt2356777','tt1219024',
-      'tt7016936','tt4574334','tt6468322','tt2788316','tt4016454',
-      'tt6048596','tt7766378','tt5925154','tt8177370','tt3343028',
-      'tt7532826','tt8282930','tt1831801','tt4786824','tt7442562',
-    ],
-  }
-};
-
-// All categories for the filter bar
-const MOVIE_CATS = Object.keys(LIBRARY.movies);
-const TV_CATS    = Object.keys(LIBRARY.tv);
-
-// ── Render grid ──
-function renderGrid(items, container) {
-  if (!items.length) { container.innerHTML = '<div class="loading">No results found.</div>'; return; }
-  container.innerHTML = items.map(m => {
-    const poster = m.Poster && m.Poster !== 'N/A'
-      ? `<img src="${m.Poster}" alt="${m.Title}" loading="lazy">`
-      : `<div class="no-poster">No Image</div>`;
-    const isTV = m.Type === 'series';
-    const inList = watchlist.some(w => w.imdbId === m.imdbID);
-    const isWatched = watchlist.find(w => w.imdbId === m.imdbID)?.watchedAt;
-    return `
-      <div class="card${isWatched ? ' is-watched' : ''}" data-imdb="${m.imdbID}" data-type="${m.Type || 'movie'}" data-title="${(m.Title||'').replace(/"/g,'&quot;')}" data-year="${m.Year||''}" data-poster="${m.Poster !== 'N/A' ? m.Poster : ''}" data-rating="${m.imdbRating||''}">
-        ${isTV ? '<span class="card-type-badge tv">TV</span>' : ''}
-        ${poster}
-        <span class="card-watched-badge">✓ watched</span>
-        <div class="card-overlay">
-          <button class="card-action${inList ? ' in-list' : ''} ca-list" data-imdb="${m.imdbID}">${inList ? '✓ listed' : '+ list'}</button>
-          <button class="card-action${isWatched ? ' watched' : ''} ca-watched" data-imdb="${m.imdbID}">${isWatched ? '✓ watched' : '👁 watched'}</button>
+    <!-- GENERAL -->
+    <div class="spanel active" id="spanel-general">
+      <div class="s-sec">
+        <div class="s-sec-title">OMDB API KEY</div>
+        <div class="s-label">Required for metadata, posters &amp; search. Free key at <strong style="color:var(--text)">omdbapi.com</strong></div>
+        <div class="s-row">
+          <input id="keyInput" class="s-input" type="password" placeholder="Enter OMDB key..." autocomplete="off">
+          <button class="btn" id="keyBtn">SET</button>
         </div>
-        <div class="card-info">
-          <div class="card-title">${m.Title}</div>
-          <div class="card-meta">${m.Year || ''}</div>
-        </div>
-      </div>`;
-  }).join('');
-
-  container.querySelectorAll('.card').forEach(c => {
-    c.addEventListener('click', e => {
-      if (e.target.closest('.card-action')) return;
-      loadPlayer(c.dataset.imdb, c.dataset.type);
-    });
-
-    c.querySelector('.ca-list').addEventListener('click', e => {
-      e.stopPropagation();
-      const id = c.dataset.imdb;
-      const btn = c.querySelector('.ca-list');
-      if (watchlist.some(w => w.imdbId === id)) {
-        watchlist = watchlist.filter(w => w.imdbId !== id);
-        btn.textContent = '+ list'; btn.classList.remove('in-list');
-      } else {
-        watchlist.push({ imdbId: id, title: c.dataset.title, year: c.dataset.year, type: c.dataset.type, poster: c.dataset.poster, rating: c.dataset.rating, addedAt: new Date().toISOString(), watchedAt: null });
-        btn.textContent = '✓ listed'; btn.classList.add('in-list');
-      }
-      saveWatchlist(); renderWatchlist(); updateAddBtn();
-    });
-
-    c.querySelector('.ca-watched').addEventListener('click', e => {
-      e.stopPropagation();
-      const id = c.dataset.imdb;
-      const btn = c.querySelector('.ca-watched');
-      let entry = watchlist.find(w => w.imdbId === id);
-      if (!entry) {
-        entry = { imdbId: id, title: c.dataset.title, year: c.dataset.year, type: c.dataset.type, poster: c.dataset.poster, rating: c.dataset.rating, addedAt: new Date().toISOString(), watchedAt: null };
-        watchlist.push(entry);
-        c.querySelector('.ca-list').textContent = '✓ listed';
-        c.querySelector('.ca-list').classList.add('in-list');
-      }
-      if (entry.watchedAt) {
-        entry.watchedAt = null;
-        btn.textContent = '👁 watched'; btn.classList.remove('watched');
-        c.classList.remove('is-watched');
-      } else {
-        entry.watchedAt = new Date().toISOString();
-        btn.textContent = '✓ watched'; btn.classList.add('watched');
-        c.classList.add('is-watched');
-      }
-      saveWatchlist(); renderWatchlist(); updateAddBtn();
-    });
-  });
-}
-
-async function fetchMany(ids) {
-  // deduplicate
-  const unique = [...new Set(ids)];
-  const results = await Promise.all(unique.map(id => omdb({ i: id })));
-  return results.filter(r => r.Response === 'True');
-}
-
-// ── Browse ──
-// Fetches one section at a time, progressively rendering
-async function loadBrowse(tab) {
-  if (tab === 'trending') {
-    browseContent.innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
-    const items = await fetchMany(LIBRARY.trending);
-    browseContent.innerHTML = `
-      <div class="section-title">Trending Now <span class="section-count">${items.length} titles</span></div>
-      <div class="grid" id="trendGrid"></div>`;
-    renderGrid(items, document.getElementById('trendGrid'));
-    return;
-  }
-
-  const cats = tab === 'movies' ? MOVIE_CATS : TV_CATS;
-  const lib  = tab === 'movies' ? LIBRARY.movies : LIBRARY.tv;
-
-  // Build category filter bar + first section placeholder
-  browseContent.innerHTML = `
-    <div class="cat-bar" id="catBar">
-      <button class="cat-btn active" data-cat="all">All</button>
-      ${cats.map(c => `<button class="cat-btn" data-cat="${c}">${c}</button>`).join('')}
-    </div>
-    <div id="sectionsWrap"></div>`;
-
-  const sectionsWrap = document.getElementById('sectionsWrap');
-
-  // Wire up category filter buttons
-  document.querySelectorAll('.cat-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const cat = btn.dataset.cat;
-      document.querySelectorAll('.section-block').forEach(sec => {
-        sec.style.display = (cat === 'all' || sec.dataset.cat === cat) ? '' : 'none';
-      });
-    });
-  });
-
-  // Load each section progressively
-  for (const cat of cats) {
-    const ids = lib[cat];
-    // Create placeholder block
-    const block = document.createElement('div');
-    block.className = 'section-block';
-    block.dataset.cat = cat;
-    block.innerHTML = `
-      <div class="section-title">${cat} <span class="section-count" id="cnt-${cat.replace(/\W/g,'_')}"></span></div>
-      <div class="grid" id="grid-${cat.replace(/\W/g,'_')}">
-        <div class="loading" style="padding:20px;grid-column:1/-1"><div class="spinner"></div>Loading...</div>
-      </div>`;
-    sectionsWrap.appendChild(block);
-
-    // Fetch & render asynchronously (don't await sequentially — fire in parallel)
-    (async () => {
-      const items = await fetchMany(ids);
-      const gridId = 'grid-' + cat.replace(/\W/g,'_');
-      const cntId  = 'cnt-'  + cat.replace(/\W/g,'_');
-      const grid = document.getElementById(gridId);
-      const cnt  = document.getElementById(cntId);
-      if (!grid) return;
-      if (cnt) cnt.textContent = items.length + ' titles';
-      renderGrid(items, grid);
-    })();
-  }
-}
-
-// ── Search ──
-async function execSearch(query) {
-  browseContent.innerHTML = '<div class="loading"><div class="spinner"></div>Searching...</div>';
-  const type = currentTab === 'tv' ? 'series' : (currentTab === 'movies' ? 'movie' : '');
-  const data = await omdb({ s: query, ...(type ? { type } : {}) });
-  if (data.Response === 'True') {
-    browseContent.innerHTML = `
-      <div class="section-title">Results for "${query}" <span class="section-count">${data.Search.length} found</span></div>
-      <div class="grid" id="srchGrid"></div>`;
-    renderGrid(data.Search, document.getElementById('srchGrid'));
-  } else {
-    browseContent.innerHTML = `<div class="loading">No results for "${query}"</div>`;
-  }
-}
-
-async function doSearch(query) {
-  if (!query.trim()) {
-    pushHistory({ type: 'browse', tab: currentTab, label: currentTab.charAt(0).toUpperCase() + currentTab.slice(1) });
-    showBrowse();
-    await loadBrowse(currentTab);
-    return;
-  }
-  pushHistory({ type: 'search', query, label: `🔍 "${query}"` });
-  showBrowse();
-  await execSearch(query);
-}
-
-// ── Player ──
-async function execLoadPlayer(imdbId, type) {
-  playerIframe.src = type === 'series'
-    ? `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=1&episode=1`
-    : `https://vidsrc.me/embed/movie?imdb=${imdbId}`;
-
-  const data = await omdb({ i: imdbId, plot: 'short' });
-  if (data.Response !== 'True') return;
-
-  currentMeta = data;
-  updateAddBtn();
-
-  playerTitle.textContent = data.Title;
-  playerPoster.src = data.Poster !== 'N/A' ? data.Poster : '';
-  playerPoster.style.display = data.Poster !== 'N/A' ? '' : 'none';
-  playerPlot.textContent = data.Plot !== 'N/A' ? data.Plot : '';
-
-  const tags = [];
-  if (data.Year) tags.push({ text: data.Year });
-  if (data.Rated && data.Rated !== 'N/A') tags.push({ text: data.Rated, red: true });
-  if (data.Runtime && data.Runtime !== 'N/A') tags.push({ text: data.Runtime });
-  if (data.Genre) data.Genre.split(', ').forEach(g => tags.push({ text: g }));
-  if (data.imdbRating && data.imdbRating !== 'N/A') tags.push({ text: '★ ' + data.imdbRating, red: true });
-  playerTags.innerHTML = tags.map(t => `<span class="ptag${t.red ? ' red' : ''}">${t.text}</span>`).join('');
-
-  if (type === 'series' && data.totalSeasons && parseInt(data.totalSeasons) > 0) {
-    const total = parseInt(data.totalSeasons);
-    seasonSel.innerHTML = Array.from({ length: total }, (_, i) => `<option value="${i+1}">Season ${i+1}</option>`).join('');
-    episodeSel.innerHTML = Array.from({ length: 20 }, (_, i) => `<option value="${i+1}">Episode ${i+1}</option>`).join('');
-    episodeBar.classList.add('visible');
-  } else {
-    episodeBar.classList.remove('visible');
-  }
-  episodeBar.dataset.imdb = imdbId;
-}
-
-async function loadPlayer(imdbId, type) {
-  const data = await omdb({ i: imdbId });
-  const label = data.Response === 'True' ? data.Title : imdbId;
-  pushHistory({ type: 'player', imdbId, mediaType: type, label });
-  showPlayer();
-  await execLoadPlayer(imdbId, type);
-}
-
-// ── Nav buttons ──
-navBackBtn.addEventListener('click', () => goToHistoryIdx(historyIdx - 1));
-navFwdBtn.addEventListener('click',  () => goToHistoryIdx(historyIdx + 1));
-
-document.addEventListener('keydown', e => {
-  if ((e.altKey || e.metaKey) && e.key === 'ArrowLeft')  { e.preventDefault(); if (!navBackBtn.disabled) navBackBtn.click(); }
-  if ((e.altKey || e.metaKey) && e.key === 'ArrowRight') { e.preventDefault(); if (!navFwdBtn.disabled)  navFwdBtn.click(); }
-});
-
-// ── Episode play ──
-document.getElementById('epPlayBtn').addEventListener('click', () => {
-  const imdb = episodeBar.dataset.imdb;
-  const s = seasonSel.value, e = episodeSel.value;
-  playerIframe.src = `https://vidsrc.me/embed/tv?imdb=${imdb}&season=${s}&episode=${e}`;
-});
-
-// ── Tabs ──
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    currentTab = tab.dataset.tab;
-    searchInput.value = '';
-    const label = tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1);
-    pushHistory({ type: 'browse', tab: currentTab, label });
-    showBrowse();
-    loadBrowse(currentTab);
-  });
-});
-
-// ── Search ──
-searchInput.addEventListener('input', e => {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => doSearch(e.target.value), 400);
-});
-
-// ── TT direct ──
-document.getElementById('ttBtn').addEventListener('click', () => {
-  const tt = ttInput.value.trim();
-  if (!tt) return;
-  const id = tt.startsWith('tt') ? tt : 'tt' + tt;
-  loadPlayer(id, 'movie');
-});
-ttInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('ttBtn').click(); });
-
-// ── Back to browse ──
-document.getElementById('backBtn').addEventListener('click', () => {
-  if (!navBackBtn.disabled) navBackBtn.click();
-  else {
-    playerIframe.src = '';
-    episodeBar.classList.remove('visible');
-    pushHistory({ type: 'browse', tab: currentTab, label: currentTab.charAt(0).toUpperCase() + currentTab.slice(1) });
-    showBrowse();
-    loadBrowse(currentTab);
-  }
-});
-
-// ── Fullscreen ──
-document.getElementById('fullscreenBtn').addEventListener('click', () => {
-  const req = playerIframe.requestFullscreen || playerIframe.webkitRequestFullscreen || playerIframe.mozRequestFullScreen;
-  if (req) req.call(playerIframe);
-});
-
-// ── Watchlist ──
-let watchlist = JSON.parse(localStorage.getItem('freeflow_watchlist') || '[]');
-let currentMeta = null;
-
-function saveWatchlist() {
-  localStorage.setItem('freeflow_watchlist', JSON.stringify(watchlist));
-}
-
-function renderWatchlist() {
-  const count = watchlist.length;
-  document.getElementById('wlCount').textContent = count + ' title' + (count !== 1 ? 's' : '');
-  const badge = document.getElementById('wlBadge');
-  if (count > 0) { badge.style.display = ''; badge.textContent = count; }
-  else { badge.style.display = 'none'; }
-
-  const empty = document.getElementById('wlEmpty');
-  const list  = document.getElementById('wlList');
-
-  if (!count) {
-    empty.style.display = 'flex';
-    list.querySelectorAll('.wl-item').forEach(el => el.remove());
-    return;
-  }
-  empty.style.display = 'none';
-  list.querySelectorAll('.wl-item').forEach(el => el.remove());
-
-  watchlist.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'wl-item';
-    const watchedStr = item.watchedAt
-      ? `<span class="watched-dot"></span>watched ${new Date(item.watchedAt).toLocaleDateString()}`
-      : 'not watched';
-    div.innerHTML = `
-      <img class="wl-item-poster" src="${item.poster || ''}" alt="" onerror="this.style.display='none'">
-      <div class="wl-item-info">
-        <div class="wl-item-title">${item.title}</div>
-        <div class="wl-item-meta">${item.year || ''} · ${item.type === 'series' ? 'TV' : 'Movie'}${item.rating ? ' · ★ ' + item.rating : ''}</div>
-        <div class="wl-item-meta" style="margin-top:3px;font-size:10px">${watchedStr}</div>
+        <div class="s-status" id="keyStatus"></div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0">
-        <button class="wl-item-remove" data-id="${item.imdbId}" title="Remove">✕</button>
-        <button class="wl-btn wl-toggle-watched" data-id="${item.imdbId}" style="font-size:9px;padding:3px 6px;${item.watchedAt ? 'color:#4caf50;border-color:#1a3a1a' : ''}">${item.watchedAt ? '✓ seen' : '👁 mark'}</button>
-      </div>`;
-    div.querySelector('.wl-item-info').addEventListener('click', () => {
-      closeDrawer();
-      loadPlayer(item.imdbId, item.type);
-    });
-    div.querySelector('.wl-item-remove').addEventListener('click', e => {
-      e.stopPropagation();
-      watchlist = watchlist.filter(w => w.imdbId !== item.imdbId);
-      saveWatchlist(); renderWatchlist(); updateAddBtn();
-    });
-    div.querySelector('.wl-toggle-watched').addEventListener('click', e => {
-      e.stopPropagation();
-      const entry = watchlist.find(w => w.imdbId === item.imdbId);
-      if (entry) {
-        entry.watchedAt = entry.watchedAt ? null : new Date().toISOString();
-        saveWatchlist(); renderWatchlist(); updateAddBtn();
-      }
-    });
-    list.appendChild(div);
-  });
-}
 
-function updateAddBtn() {
-  const btn = document.getElementById('wlAddBtn');
-  if (!currentMeta) return;
-  const inList = watchlist.some(w => w.imdbId === currentMeta.imdbID);
-  btn.textContent = inList ? '✓ IN LIST' : '+ ADD TO LIST';
-  btn.style.color = inList ? '#4caf50' : '';
-  btn.style.borderColor = inList ? '#1a3a1a' : '';
-}
+      <div class="s-sec">
+        <div class="s-sec-title">IMPORT MERGE BEHAVIOUR <span class="s-note">versioned · auto-migrated</span></div>
+        <div class="s-label">Controls what happens when a library file is imported.</div>
+        <div class="radio-group" id="mergeRadios">
+          <label class="radio-opt" data-val="auto">
+            <div class="rdot"></div>
+            <div><div class="rlabel">Auto-merge, never ask</div><div class="rdesc">All incoming IDs merged silently. Duplicates within the same category are deduped automatically.</div></div>
+          </label>
+          <label class="radio-opt" data-val="ask">
+            <div class="rdot"></div>
+            <div><div class="rlabel">Ask on each import (batch)</div><div class="rdesc">A staging screen appears before every import. Approve or skip titles as a group — new vs duplicate flagged.</div></div>
+          </label>
+          <label class="radio-opt" data-val="per-entry">
+            <div class="rdot"></div>
+            <div><div class="rlabel">Ask per entry — full staging buffer</div><div class="rdesc">Every title is fetched and shown with poster, year, and category. Toggle each one individually. Duplicates highlighted in yellow. Slowest but most precise.</div></div>
+          </label>
+        </div>
+      </div>
 
-function openDrawer()  { document.getElementById('wlDrawer').classList.add('open'); document.getElementById('wlOverlay').classList.add('open'); }
-function closeDrawer() { document.getElementById('wlDrawer').classList.remove('open'); document.getElementById('wlOverlay').classList.remove('open'); }
+      <div class="s-sec">
+        <div class="s-sec-title">FILE STORAGE <span class="s-note">File System Access API · Chrome/Edge</span></div>
+        <div class="s-label">
+          Point FreeFlow at a <strong style="color:var(--text)">.json</strong> file on your disk.
+          All saves write through to the file automatically. Edit it externally in any text editor — reload to pick up changes.
+          Falls back to localStorage if the API is unavailable or permission is denied.
+        </div>
+        <div class="filesync-status-box" id="fileSyncStatusBox">
+          <div class="fss-row"><span class="fss-key">mode</span><span class="fss-val" id="fssMode">localStorage only</span></div>
+          <div class="fss-row"><span class="fss-key">file</span><span class="fss-val fss-dim" id="fssFile">none</span></div>
+          <div class="fss-row"><span class="fss-key">last write</span><span class="fss-val fss-dim" id="fssLastWrite">—</span></div>
+          <div class="fss-row"><span class="fss-key">api support</span><span class="fss-val" id="fssSupport">checking…</span></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn" id="fsAttachBtn">📂 ATTACH FILE</button>
+          <button class="btn-ghost" id="fsNewBtn">✨ NEW FILE</button>
+          <button class="btn-ghost" id="fsDetachBtn" disabled>DETACH</button>
+        </div>
+        <div class="s-status" id="fsStatus" style="margin-top:8px"></div>
+      </div>
 
-document.getElementById('wlOpenBtn').addEventListener('click', openDrawer);
-document.getElementById('wlCloseBtn').addEventListener('click', closeDrawer);
-document.getElementById('wlOverlay').addEventListener('click', closeDrawer);
 
-document.getElementById('wlAddBtn').addEventListener('click', () => {
-  if (!currentMeta) return;
-  const id = currentMeta.imdbID;
-  if (watchlist.some(w => w.imdbId === id)) {
-    watchlist = watchlist.filter(w => w.imdbId !== id);
-  } else {
-    watchlist.push({
-      imdbId: id,
-      title: currentMeta.Title,
-      year: currentMeta.Year,
-      type: currentMeta.Type,
-      poster: currentMeta.Poster !== 'N/A' ? currentMeta.Poster : '',
-      rating: currentMeta.imdbRating !== 'N/A' ? currentMeta.imdbRating : '',
-      genre: currentMeta.Genre,
-      addedAt: new Date().toISOString()
-    });
-  }
-  saveWatchlist(); renderWatchlist(); updateAddBtn();
-});
+      <div class="s-sec">
+        <div class="s-sec-title">TMDB API KEY <span class="s-note">primary metadata source</span></div>
+        <div class="s-label">TMDB provides trailers, backdrops, cast, recommendations &amp; streaming providers. Free key at <strong style="color:var(--text)">themoviedb.org/settings/api</strong></div>
+        <div class="s-row">
+          <input id="tmdbKeyInput" class="s-input" type="password" placeholder="Enter TMDB API key..." autocomplete="off">
+          <button class="btn" id="tmdbKeyBtn">SET</button>
+        </div>
+        <div class="s-status" id="tmdbKeyStatus"></div>
+      </div>
 
-document.getElementById('wlClearBtn').addEventListener('click', () => {
-  if (!watchlist.length) return;
-  if (confirm('Clear entire watchlist?')) {
-    watchlist = [];
-    saveWatchlist(); renderWatchlist(); updateAddBtn();
-  }
-});
+      <div class="s-sec">
+        <div class="s-sec-title">GITHUB SYNC <span class="s-note">cloud storage via private repo</span></div>
+        <div class="s-label">Auto-push on every save. Pull on load. Conflict diff viewer if both sides changed.</div>
+        <div class="filesync-status-box">
+          <div class="fss-row"><span class="fss-key">status</span><span class="fss-val" id="ghStatus">not configured</span></div>
+        </div>
+        <div class="s-row"><input id="ghToken" class="s-input" type="password" placeholder="GitHub personal access token (repo scope)" autocomplete="off"></div>
+        <div class="s-row"><input id="ghRepo" class="s-input" type="text" placeholder="username/repo-name" autocomplete="off"></div>
+        <div class="s-row" style="gap:8px;align-items:center">
+          <input id="ghFile" class="s-input" type="text" placeholder="freeflow-data.json" style="flex:1">
+          <label style="font-size:10px;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:4px">
+            <input type="checkbox" id="ghAutoSync"> Auto-sync
+          </label>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+          <button class="btn" id="ghSaveBtn">SAVE &amp; TEST</button>
+          <button class="btn-ghost" id="ghPushBtn">↑ PUSH NOW</button>
+          <button class="btn-ghost" id="ghPullBtn">↓ PULL NOW</button>
+        </div>
+        <div class="s-status" id="ghConnectStatus" style="margin-top:6px"></div>
+      </div>
 
-// ── Export ──
-function downloadFile(content, filename, type) {
-  const blob = new Blob([content], { type });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
+      <div class="s-sec">
+        <div class="s-sec-title">STORAGE SCHEMA <span class="s-note">versioned migrations</span></div>
+        <div id="schemaBanner" class="schema-banner">Loading...</div>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <button class="btn-ghost btn-sm" id="exportAllBtn">↓ FULL BACKUP</button>
+          <button class="btn-ghost btn-sm" id="importAllBtn">↑ RESTORE BACKUP</button>
+          <input type="file" id="backupFilePicker" accept=".json" style="display:none">
+        </div>
+      </div>
 
-document.getElementById('wlExportCSV').addEventListener('click', () => {
-  if (!watchlist.length) return;
-  const header = 'Title,Year,Type,IMDb ID,Rating,Genre,Added,Watched\n';
-  const rows = watchlist.map(w =>
-    [w.title, w.year, w.type, w.imdbId, w.rating, w.genre, w.addedAt, w.watchedAt || '']
-    .map(v => `"${(v||'').replace(/"/g,'""')}"`)
-    .join(',')
-  ).join('\n');
-  downloadFile(header + rows, 'watchlist.csv', 'text/csv');
-});
+      <div class="s-sec">
+        <div class="s-sec-title">PREFERENCES <span class="s-note">future</span></div>
+        <div class="pref-ph">THEME SWITCHER — coming soon</div>
+        <div class="pref-ph">DEFAULT TAB — coming soon</div>
+        <div class="pref-ph">CARD DENSITY — coming soon</div>
+        <div class="pref-ph">AUTOPLAY NEXT EPISODE — coming soon</div>
+      </div>
+    </div>
 
-document.getElementById('wlExportJSON').addEventListener('click', () => {
-  if (!watchlist.length) return;
-  downloadFile(JSON.stringify(watchlist, null, 2), 'watchlist.json', 'application/json');
-});
+    <!-- LIBRARY -->
+    <div class="spanel" id="spanel-library">
+      <div class="s-sec">
+        <div class="s-sec-title">LIBRARY STATS</div>
+        <div class="stats-grid" id="libStats"></div>
+      </div>
 
-renderWatchlist();
+      <div class="s-sec">
+        <div class="s-sec-title">EXPORT</div>
+        <div class="s-label">Save your library to a file. <strong style="color:var(--text)">.js</strong> is a runnable plugin; <strong style="color:var(--text)">.json</strong> is raw data for sharing or editing.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-ghost" id="exportJsBtn">↓ EXPORT .JS PLUGIN</button>
+          <button class="btn-ghost" id="exportJsonBtn">↓ EXPORT .JSON DATA</button>
+        </div>
+      </div>
 
-// ══════════════════════════════════════════════════════════════
-// ██████████   FREEFLOW PUBLIC API   ███████████████████████████
-// ══════════════════════════════════════════════════════════════
-// Exposed on window.FreeFlow — usable from the plugin console
-// or any imported .js plugin file.
+      <div class="s-sec">
+        <div class="s-sec-title">EXPORT METADATA CACHE <span class="s-note">title · year · rating · runtime · genre · plot · poster</span></div>
+        <div class="s-label">Snapshot of everything OMDB has returned so far. Re-import to pre-warm the cache and avoid repeat API calls.</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn-ghost" id="exportMetaBtn">↓ EXPORT METADATA.JSON</button>
+          <button class="btn-ghost" id="importMetaFileBtn">↑ IMPORT METADATA.JSON</button>
+          <input type="file" id="metaFilePicker" accept=".json" style="display:none">
+          <span class="s-status" id="metaStatus"></span>
+        </div>
+        <div style="margin-top:8px" id="cacheStats"></div>
+      </div>
 
-window.FreeFlow = {
+      <div class="s-sec">
+        <div class="s-sec-title">IMPORT — FILE PICKER</div>
+        <div class="s-label"><strong style="color:var(--text)">.js</strong> is loaded into the Plugin editor (press RUN to execute). <strong style="color:var(--text)">.json</strong> is merged immediately per your merge setting.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <button class="btn-ghost" id="importJsFileBtn">↑ LOAD .JS FILE</button>
+          <button class="btn-ghost" id="importJsonFileBtn">↑ LOAD .JSON FILE</button>
+          <input type="file" id="jsFilePicker"   accept=".js"   style="display:none">
+          <input type="file" id="jsonFilePicker" accept=".json" style="display:none">
+        </div>
+        <div class="s-status" id="fileStatus"></div>
+      </div>
 
-  // Add a brand-new category (or overwrite if exists)
-  addCategory(tab, name, ids) {
-    if (!LIBRARY[tab] || tab === 'trending') {
-      pluginLog(`addCategory: invalid tab "${tab}" (use 'movies' or 'tv')`, 'err');
-      return false;
-    }
-    if (!Array.isArray(ids)) { pluginLog('addCategory: ids must be an array', 'err'); return false; }
-    LIBRARY[tab][name] = [...new Set(ids.map(id => id.trim()).filter(id => /^tt\d+$/.test(id)))];
-    pluginLog(`✓ addCategory: added "${name}" to ${tab} with ${LIBRARY[tab][name].length} IDs`, 'ok');
-    return true;
-  },
+      <div class="s-sec">
+        <div class="s-sec-title">IMPORT — PASTE JSON</div>
+        <div class="s-label">Paste a raw JSON library object directly. No file needed.</div>
+        <textarea id="jsonPaste" class="paste-area" placeholder='{ "trending": [...], "movies": { "My Cat": ["tt..."] }, "tv": {} }'></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+          <button class="btn" id="jsonPasteBtn">IMPORT PASTE</button>
+          <button class="btn-ghost btn-sm" id="jsonPasteClear">CLEAR</button>
+          <span class="s-status" id="pasteStatus"></span>
+        </div>
+      </div>
 
-  // Append IDs into an existing category (or create it)
-  addIds(tab, cat, ids) {
-    if (!LIBRARY[tab] || tab === 'trending') {
-      pluginLog(`addIds: invalid tab "${tab}"`, 'err'); return false;
-    }
-    if (!Array.isArray(ids)) { pluginLog('addIds: ids must be an array', 'err'); return false; }
-    const valid = ids.map(id => id.trim()).filter(id => /^tt\d+$/.test(id));
-    if (!LIBRARY[tab][cat]) LIBRARY[tab][cat] = [];
-    const before = LIBRARY[tab][cat].length;
-    LIBRARY[tab][cat] = [...new Set([...LIBRARY[tab][cat], ...valid])];
-    pluginLog(`✓ addIds: added ${LIBRARY[tab][cat].length - before} new IDs to "${cat}" in ${tab}`, 'ok');
-    return true;
-  },
+      <div class="s-sec">
+        <div class="s-sec-title" style="color:var(--red)">DANGER ZONE</div>
+        <div class="s-label">Reset to built-in defaults. Your watchlist is unaffected.</div>
+        <button class="btn-ghost" id="resetLibBtn" style="border-color:var(--red-dim);color:var(--red)">↺ RESET TO DEFAULTS</button>
+      </div>
+    </div>
 
-  // Add IDs to the trending list
-  addTrending(ids) {
-    if (!Array.isArray(ids)) { pluginLog('addTrending: ids must be an array', 'err'); return false; }
-    const valid = ids.map(id => id.trim()).filter(id => /^tt\d+$/.test(id));
-    const before = LIBRARY.trending.length;
-    LIBRARY.trending = [...new Set([...LIBRARY.trending, ...valid])];
-    pluginLog(`✓ addTrending: added ${LIBRARY.trending.length - before} new IDs`, 'ok');
-    return true;
-  },
+    <!-- PLUGIN -->
+    <div class="spanel" id="spanel-plugin">
+      <div class="s-sec">
+        <div class="s-sec-title">SCRIPT EDITOR <span class="s-note">window.FreeFlow available as FreeFlow</span></div>
+        <div class="s-label">Write or paste JS. The full FreeFlow API is injected — no prefix needed.</div>
+        <textarea id="pluginCode" class="code-area" spellcheck="false" placeholder="// FreeFlow.addCategory('movies', 'My Picks', ['tt0120737']);
+// FreeFlow.refresh();"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <button class="btn" id="pluginRun">▶ RUN</button>
+          <button class="btn-ghost btn-sm" id="pluginClear">CLEAR</button>
+          <button class="btn-ghost btn-sm" id="pluginTemplate">TEMPLATE</button>
+          <button class="btn-ghost btn-sm" id="pluginSave">SAVE SNIPPET</button>
+        </div>
+      </div>
+      <div class="s-sec">
+        <div class="s-sec-title">CONSOLE</div>
+        <div class="console-log" id="pluginLog"><span class="ll ac">// output appears here</span></div>
+        <div style="margin-top:6px"><button class="btn-ghost btn-sm" id="clearLog">CLEAR LOG</button></div>
+      </div>
+      <div class="s-sec">
+        <div class="s-sec-title">SAVED SNIPPETS</div>
+        <div id="snippetList"><div class="s-status" id="snippetEmpty">No snippets yet. Write a script and press SAVE SNIPPET.</div></div>
+      </div>
+    </div>
 
-  // Remove a category
-  removeCategory(tab, name) {
-    if (!LIBRARY[tab] || !LIBRARY[tab][name]) {
-      pluginLog(`removeCategory: "${name}" not found in ${tab}`, 'warn'); return false;
-    }
-    delete LIBRARY[tab][name];
-    pluginLog(`✓ removeCategory: removed "${name}" from ${tab}`, 'ok');
-    return true;
-  },
+    <!-- API REF -->
+    <div class="spanel" id="spanel-apiref">
+      <div class="s-sec">
+        <div class="s-sec-title">window.FreeFlow — FULL API</div>
+        <div class="api-ref"><span class="ac">// ── Library mutation ─────────────────────────────────</span>
 
-  // Replace entire library
-  setLibrary(lib) {
-    if (!lib || typeof lib !== 'object') { pluginLog('setLibrary: invalid library object', 'err'); return false; }
-    if (lib.trending) LIBRARY.trending = lib.trending;
-    if (lib.movies)   Object.assign(LIBRARY.movies, lib.movies);
-    if (lib.tv)       Object.assign(LIBRARY.tv, lib.tv);
-    pluginLog('✓ setLibrary: library updated', 'ok');
-    return true;
-  },
+<span class="ac">// Add / overwrite a category</span>
+<span class="af">FreeFlow.addCategory</span>(<span class="as">'movies'</span>|<span class="as">'tv'</span>, <span class="as">'Name'</span>, [<span class="as">'tt...'</span>])
 
-  // Get a deep copy of the current library
-  getLibrary() {
-    return JSON.parse(JSON.stringify(LIBRARY));
-  },
+<span class="ac">// Append IDs (creates category if missing)</span>
+<span class="af">FreeFlow.addIds</span>(<span class="as">'movies'</span>|<span class="as">'tv'</span>, <span class="as">'Name'</span>, [<span class="as">'tt...'</span>])
 
-  // Force reload the current browse tab
-  refresh() {
-    pluginLog('↺ refresh: reloading browse...', 'ok');
-    loadBrowse(currentTab);
-  },
+<span class="ac">// Remove a whole category</span>
+<span class="af">FreeFlow.removeCategory</span>(<span class="as">'movies'</span>|<span class="as">'tv'</span>, <span class="as">'Name'</span>)
 
-  // Log to plugin console from scripts
-  log(msg) { pluginLog(String(msg)); }
-};
+<span class="ac">// Add IDs to Trending</span>
+<span class="af">FreeFlow.addTrending</span>([<span class="as">'tt...'</span>])
 
-// ── Plugin console logger ──
-function pluginLog(msg, type = '') {
-  const log = document.getElementById('pluginLog');
-  if (!log) { console.log('[FreeFlow]', msg); return; }
-  const cls = type === 'ok' ? 'log-ok' : type === 'err' ? 'log-err' : type === 'warn' ? 'log-warn' : '';
-  const line = document.createElement('div');
-  line.className = 'log-line' + (cls ? ' ' + cls : '');
-  line.textContent = '> ' + msg;
-  log.appendChild(line);
-  log.scrollTop = log.scrollHeight;
-}
+<span class="ac">// Merge a full library object (trending + movies + tv)</span>
+<span class="af">FreeFlow.setLibrary</span>(obj)
 
-// ── Stats panel ──
-function updatePluginStats() {
-  const movieCount = Object.values(LIBRARY.movies).flat().length;
-  const tvCount    = Object.values(LIBRARY.tv).flat().length;
-  const movieCats  = Object.keys(LIBRARY.movies).length;
-  const tvCats     = Object.keys(LIBRARY.tv).length;
-  document.getElementById('pluginStats').innerHTML = `
-    <div class="stat-box"><div class="stat-num">${LIBRARY.trending.length}</div><div class="stat-label">Trending</div></div>
-    <div class="stat-box"><div class="stat-num">${movieCount}</div><div class="stat-label">Movie IDs · ${movieCats} cats</div></div>
-    <div class="stat-box"><div class="stat-num">${tvCount}</div><div class="stat-label">TV IDs · ${tvCats} cats</div></div>`;
-}
+<span class="ac">// ── Library read ─────────────────────────────────────</span>
 
-// ── Plugin modal open/close ──
-function openPlugin() {
-  updatePluginStats();
-  document.getElementById('pluginOverlay').classList.add('open');
-}
-function closePlugin() {
-  document.getElementById('pluginOverlay').classList.remove('open');
-}
+<span class="ac">// Deep copy of current library</span>
+<span class="af">FreeFlow.getLibrary</span>()
 
-document.getElementById('pluginBtn').addEventListener('click', openPlugin);
-document.getElementById('pluginClose').addEventListener('click', closePlugin);
-document.getElementById('pluginOverlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('pluginOverlay')) closePlugin();
-});
+<span class="ac">// All unique IDs for a tab, or specific category</span>
+<span class="af">FreeFlow.getIds</span>(<span class="as">'movies'</span>, <span class="as">'Action'</span>?)
 
-// ── Run script ──
-document.getElementById('pluginRunBtn').addEventListener('click', () => {
-  const code = document.getElementById('pluginCode').value.trim();
-  if (!code) return;
-  const log = document.getElementById('pluginLog');
-  log.innerHTML = '';
-  pluginLog('Running script...', 'warn');
-  try {
-    // eslint-disable-next-line no-new-func
-    const fn = new Function('FreeFlow', code);
-    fn(window.FreeFlow);
-    updatePluginStats();
-  } catch(err) {
-    pluginLog('Error: ' + err.message, 'err');
-  }
-});
+<span class="ac">// ── UI ───────────────────────────────────────────────</span>
 
-document.getElementById('pluginClearCode').addEventListener('click', () => {
-  document.getElementById('pluginCode').value = '';
-  document.getElementById('pluginLog').innerHTML = '<div class="log-line api-comment">// Output appears here</div>';
-});
+<span class="af">FreeFlow.refresh</span>()                  <span class="ac">// reload browse</span>
+<span class="af">FreeFlow.goTo</span>(<span class="as">'trending'</span>|<span class="as">'movies'</span>|<span class="as">'tv'</span>)
+<span class="af">FreeFlow.play</span>(<span class="as">'tt...'</span>, <span class="as">'movie'</span>|<span class="as">'series'</span>?)
 
-document.getElementById('pluginLoadTemplate').addEventListener('click', () => {
-  document.getElementById('pluginCode').value =
-`// ── FreeFlow Library Plugin Template ──
-// Add a new movie category
-FreeFlow.addCategory('movies', 'My Picks', [
-  'tt0120737', // Lord of the Rings: Fellowship
-  'tt0167261', // Lord of the Rings: Two Towers
-  'tt0167260', // Lord of the Rings: Return of the King
-]);
+<span class="ac">// ── Logging ──────────────────────────────────────────</span>
 
-// Append to an existing category
-FreeFlow.addIds('tv', 'Drama', [
-  'tt5753856', // Sharp Objects
-]);
+<span class="af">FreeFlow.log</span>(<span class="as">'msg'</span>, <span class="as">'ok'</span>|<span class="as">'warn'</span>|<span class="as">'err'</span>|<span class="as">'info'</span>?)
 
-// Add to trending
-FreeFlow.addTrending(['tt1160419']); // Dune
+<span class="ac">// ── Merge mode ───────────────────────────────────────</span>
 
-// Reload the view
-FreeFlow.refresh();`;
-  pluginLog('Template loaded', 'ok');
-});
+<span class="af">FreeFlow.getMergeMode</span>()   <span class="ac">// 'auto' | 'ask' | 'per-entry'</span>
+<span class="af">FreeFlow.setMergeMode</span>(<span class="as">'ask'</span>)</div>
+      </div>
 
-// ── Import JS ──
-document.getElementById('importJsBtn').addEventListener('click', () => {
-  document.getElementById('importJsFile').click();
-});
-document.getElementById('importJsFile').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const code = ev.target.result;
-    document.getElementById('pluginCode').value = code;
-    document.getElementById('pluginLog').innerHTML = '';
-    pluginLog(`Loaded "${file.name}" (${(code.length/1024).toFixed(1)} KB) — press RUN to execute`, 'warn');
-    document.getElementById('importStatus').textContent = '✓ ' + file.name;
-    updatePluginStats();
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-});
+      <div class="s-sec">
+        <div class="s-sec-title">.JS PLUGIN FORMAT</div>
+        <div class="api-ref"><span class="ac">// freeflow-myplugin.js
+// ─────────────────────────────────────────────────────────────
+// HOW TO USE:
+//   Option A — Library tab → Load .JS File → switches to Plugin
+//              tab automatically → press ▶ RUN
+//   Option B — paste directly into Plugin → Script Editor
+// ─────────────────────────────────────────────────────────────</span>
 
-// ── Import JSON ──
-document.getElementById('importJsonBtn').addEventListener('click', () => {
-  document.getElementById('importJsonFile').click();
-});
-document.getElementById('importJsonFile').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const lib = JSON.parse(ev.target.result);
-      document.getElementById('pluginLog').innerHTML = '';
-      const ok = window.FreeFlow.setLibrary(lib);
-      if (ok) {
-        document.getElementById('importStatus').textContent = '✓ ' + file.name;
-        updatePluginStats();
-        pluginLog(`Imported "${file.name}" successfully`, 'ok');
-        loadBrowse(currentTab);
-      }
-    } catch(err) {
-      pluginLog('JSON parse error: ' + err.message, 'err');
-      document.getElementById('importStatus').textContent = '✗ parse error';
-    }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-});
+(<span class="ak">function</span> () {
 
-// ── Export JS ──
-document.getElementById('exportJsBtn').addEventListener('click', () => {
-  const lib = window.FreeFlow.getLibrary();
-  const movieCats = Object.entries(lib.movies).map(([cat, ids]) =>
-    `  FreeFlow.addCategory('movies', ${JSON.stringify(cat)}, [\n    ${ids.map(id=>`'${id}'`).join(', ')}\n  ]);`
-  ).join('\n');
-  const tvCats = Object.entries(lib.tv).map(([cat, ids]) =>
-    `  FreeFlow.addCategory('tv', ${JSON.stringify(cat)}, [\n    ${ids.map(id=>`'${id}'`).join(', ')}\n  ]);`
-  ).join('\n');
-  const trendStr = lib.trending.map(id=>`'${id}'`).join(', ');
+  <span class="ac">// Add a brand-new movie category (overwrites if name already exists)</span>
+  <span class="af">FreeFlow.addCategory</span>(<span class="as">'movies'</span>, <span class="as">'A24 Films'</span>, [
+    <span class="as">'tt1981115'</span>,   <span class="ac">// Hereditary</span>
+    <span class="as">'tt5027774'</span>,   <span class="ac">// Three Billboards Outside Ebbing, Missouri</span>
+    <span class="as">'tt7131622'</span>,   <span class="ac">// Once Upon a Time in Hollywood</span>
+    <span class="as">'tt6751668'</span>,   <span class="ac">// Parasite</span>
+    <span class="as">'tt5813916'</span>,   <span class="ac">// Midsommar</span>
+  ]);
 
-  const js = `// ── FreeFlow Library Plugin ──
-// Generated: ${new Date().toISOString()}
-// Load this file in the Plugin System → Import .JS, then press RUN
+  <span class="ac">// Append IDs to an existing category (creates it if missing)</span>
+  <span class="af">FreeFlow.addIds</span>(<span class="as">'tv'</span>, <span class="as">'Drama'</span>, [
+    <span class="as">'tt5753856'</span>,   <span class="ac">// Sharp Objects</span>
+    <span class="as">'tt7442562'</span>,   <span class="ac">// The Bear</span>
+  ]);
 
-(function() {
-  // Clear existing categories first (optional — remove to merge instead)
-  // FreeFlow.setLibrary({ trending: [], movies: {}, tv: {} });
+  <span class="ac">// Add to the Trending row</span>
+  <span class="af">FreeFlow.addTrending</span>([
+    <span class="as">'tt1160419'</span>,   <span class="ac">// Dune (2021)</span>
+  ]);
 
-  // Trending
-  FreeFlow.addTrending([${trendStr}]);
+  <span class="ac">// Log to the Plugin console, then reload the current view</span>
+  <span class="af">FreeFlow.log</span>(<span class="as">'A24 plugin loaded!'</span>, <span class="as">'ok'</span>);
+  <span class="af">FreeFlow.refresh</span>();
 
-  // Movies
-${movieCats}
+})();</div>
+      </div>
 
-  // TV
-${tvCats}
+      <div class="s-sec">
+        <div class="s-sec-title">.JSON DATA FORMAT</div>
+        <div class="api-ref">{
+  <span class="as">"trending"</span>: [<span class="as">"tt9362722"</span>],
+  <span class="as">"movies"</span>: { <span class="as">"A24"</span>: [<span class="as">"tt1981115"</span>, <span class="as">"tt5027774"</span>] },
+  <span class="as">"tv"</span>:     { <span class="as">"My Shows"</span>: [<span class="as">"tt0944947"</span>] }
+}</div>
+      </div>
+    </div>
 
-  FreeFlow.refresh();
-})();`;
-  downloadFile(js, 'freeflow-library.js', 'text/javascript');
-  pluginLog('✓ Exported library as .js plugin', 'ok');
-});
+  </div><!-- /settings-body -->
+</div><!-- /settings-drawer -->
 
-// ── Export JSON ──
-document.getElementById('exportJsonBtn').addEventListener('click', () => {
-  const lib = window.FreeFlow.getLibrary();
-  downloadFile(JSON.stringify(lib, null, 2), 'freeflow-library.json', 'application/json');
-  pluginLog('✓ Exported library as .json', 'ok');
-});
+<!-- STAGING MODAL -->
+<div class="staging-overlay" id="stagingOverlay">
+  <div class="staging-modal">
+    <div class="staging-hdr">
+      <div>
+        <div style="font-family:var(--font-display);font-size:17px;letter-spacing:0.05em">IMPORT PREVIEW</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px" id="stagingSub"></div>
+      </div>
+      <button class="icon-close" id="stagingClose">✕</button>
+    </div>
+    <div class="staging-list" id="stagingList"></div>
+    <div class="staging-footer">
+      <div class="staging-summary" id="stagingSummary"></div>
+      <button class="btn-ghost btn-sm" id="stgAll">ALL</button>
+      <button class="btn-ghost btn-sm" id="stgNone">NONE</button>
+      <button class="btn-ghost btn-sm" id="stgNew">NEW ONLY</button>
+      <button class="btn-green" id="stgCommit">COMMIT</button>
+      <button class="btn-ghost" id="stgCancel">CANCEL</button>
+    </div>
+  </div>
+</div>
 
-// ── Init ──
-pushHistory({ type: 'browse', tab: 'trending', label: 'Trending' });
-showBrowse();
-loadBrowse('trending');
-</script>
+<!-- STORAGE RECOVERY MODAL -->
+<div class="recovery-overlay" id="recoveryOverlay">
+  <div class="recovery-modal">
+    <div class="recovery-title">⚠ STORAGE ISSUE DETECTED</div>
+    <div class="recovery-body" id="recoveryBody">A storage key could not be loaded or migrated.</div>
+    <div class="recovery-detail" id="recoveryDetail"></div>
+    <div class="recovery-actions">
+      <button class="btn" id="recoveryExport">↓ EXPORT BACKUP FIRST</button>
+      <button class="btn-ghost" id="recoveryReset" style="border-color:var(--red-dim);color:var(--red)">RESET AFFECTED KEY</button>
+      <button class="btn-ghost" id="recoveryDismiss">DISMISS (use partial data)</button>
+    </div>
+  </div>
+</div>
+
+<!-- GROUP CREATE/EDIT MODAL -->
+<div class="group-modal-overlay" id="groupModalOverlay">
+  <div class="group-modal">
+    <div class="group-modal-title" id="groupModalTitle">NEW GROUP</div>
+    <div>
+      <div class="s-label">Name</div>
+      <input id="groupModalName" class="s-input" type="text" placeholder="e.g. Horror Favs" maxlength="60">
+    </div>
+    <div>
+      <div class="s-label">Description (optional)</div>
+      <input id="groupModalDesc" class="s-input" type="text" placeholder="What goes in this group?" maxlength="120">
+    </div>
+    <div>
+      <div class="s-label">Color</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="groupColorPicker">
+        <button class="group-color-opt active" data-color="#e63946" style="background:#e63946"></button>
+        <button class="group-color-opt" data-color="#4caf50" style="background:#4caf50"></button>
+        <button class="group-color-opt" data-color="#4fc3f7" style="background:#4fc3f7"></button>
+        <button class="group-color-opt" data-color="#ffc107" style="background:#ffc107"></button>
+        <button class="group-color-opt" data-color="#ce93d8" style="background:#ce93d8"></button>
+        <button class="group-color-opt" data-color="#ff8a65" style="background:#ff8a65"></button>
+        <button class="group-color-opt" data-color="#80cbc4" style="background:#80cbc4"></button>
+        <button class="group-color-opt" data-color="#666" style="background:#666"></button>
+      </div>
+    </div>
+    <div>
+      <div class="s-label">Parent group (optional)</div>
+      <select id="groupModalParent" class="episode-bar select" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--font-body);font-size:12px;padding:6px 8px;outline:none;width:100%">
+        <option value="">— none (top level) —</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn" id="groupModalSave">SAVE GROUP</button>
+      <button class="btn-ghost" id="groupModalCancel">CANCEL</button>
+      <button class="btn-ghost" id="groupModalDelete" style="margin-left:auto;color:var(--red);border-color:var(--red-dim);display:none">DELETE</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFLICT DIFF MODAL -->
+<div class="staging-overlay" id="conflictOverlay">
+  <div class="staging-modal">
+    <div class="staging-hdr">
+      <div>
+        <div style="font-family:var(--font-display);font-size:17px;letter-spacing:0.05em;color:var(--yellow)">⚠ SYNC CONFLICT</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">Both local and remote changed since last sync. Choose per-key.</div>
+      </div>
+      <button class="icon-close" id="conflictCancel">✕</button>
+    </div>
+    <div class="staging-list" id="conflictBody" style="gap:0"></div>
+    <div class="staging-footer">
+      <div class="staging-summary">Choose LOCAL or REMOTE for each key, then commit.</div>
+      <button class="btn-green" id="conflictCommit">COMMIT RESOLUTION</button>
+      <button class="btn-ghost" id="conflictCancel2">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV BAR -->
+<div class="nav-bar">
+  <button class="nav-btn" id="navBack" disabled>&#8592;</button>
+  <button class="nav-btn" id="navFwd"  disabled>&#8594;</button>
+  <div class="nav-sep">|</div>
+  <div class="breadcrumbs" id="breadcrumbs"></div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="browse-panel visible" id="browsePanel">
+    <div id="browseContent"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+  </div>
+
+  <!-- MY TAB PANEL -->
+  <div class="my-panel" id="myPanel">
+
+    <!-- Sub-tab bar -->
+    <div class="my-tabs">
+      <button class="my-tab active" data-mytab="favorites">★ FAVORITES</button>
+      <button class="my-tab" data-mytab="queue">⏱ QUEUE</button>
+      <button class="my-tab" data-mytab="history">📖 HISTORY</button>
+      <button class="my-tab" data-mytab="groups">⊞ GROUPS</button>
+    </div>
+
+    <!-- FAVORITES -->
+    <div class="my-section active" id="mysec-favorites">
+      <div class="my-sec-header">
+        <span class="my-sec-title">FAVORITES</span>
+        <span class="my-sec-count" id="favCount">0 titles</span>
+      </div>
+      <div class="grid my-grid" id="favGrid"></div>
+      <div class="my-empty" id="favEmpty">No favorites yet — click ★ on any title</div>
+    </div>
+
+    <!-- QUEUE (watchlist) -->
+    <div class="my-section" id="mysec-queue">
+      <div class="my-sec-header">
+        <span class="my-sec-title">WATCH QUEUE</span>
+        <span class="my-sec-count" id="queueCount">0 titles</span>
+        <div style="display:flex;gap:6px;margin-left:auto">
+          <button class="btn-ghost btn-sm" id="queueAutoRemoveToggle">AUTO-REMOVE: OFF</button>
+          <button class="btn-ghost btn-sm" id="queueClearWatched">CLEAR WATCHED</button>
+        </div>
+      </div>
+      <div id="queueList"></div>
+      <div class="my-empty" id="queueEmpty">Queue is empty — add titles with + QUEUE</div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="my-section" id="mysec-history">
+      <div class="my-sec-header">
+        <span class="my-sec-title">WATCH HISTORY</span>
+        <span class="my-sec-count" id="historyCount">0 entries</span>
+        <button class="btn-ghost btn-sm" id="historyClearBtn" style="margin-left:auto">CLEAR HISTORY</button>
+      </div>
+      <div id="historyList"></div>
+      <div class="my-empty" id="historyEmpty">No watch history yet</div>
+    </div>
+
+    <!-- GROUPS -->
+    <div class="my-section" id="mysec-groups">
+      <div class="my-sec-header">
+        <span class="my-sec-title">GROUPS</span>
+        <span class="my-sec-count" id="groupCount">0 groups</span>
+        <div style="display:flex;gap:6px;margin-left:auto">
+          <button class="btn" id="newGroupBtn">+ NEW GROUP</button>
+        </div>
+      </div>
+      <div id="groupTree"></div>
+      <div class="my-empty" id="groupsEmpty">No groups yet — create one or use FreeFlow.groups.create()</div>
+    </div>
+
+  </div><!-- /my-panel -->
+  <div class="player-panel" id="playerPanel">
+    <div class="player-container">
+      <iframe id="playerIframe" src="" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen; picture-in-picture" frameborder="0" scrolling="no"></iframe>
+    </div>
+    <div class="episode-bar" id="episodeBar">
+      <label>Season</label><select id="seasonSel"></select>
+      <label>Episode</label><select id="episodeSel"></select>
+      <button class="btn" id="epPlayBtn">PLAY EPISODE</button>
+    </div>
+    <div class="player-meta">
+      <img id="playerPoster" class="player-poster" src="" alt="">
+      <div class="player-details">
+        <div class="player-title" id="playerTitle">—</div>
+        <div class="player-tags"  id="playerTags"></div>
+        <div class="player-plot"  id="playerPlot"></div>
+      </div>
+      <div class="player-actions">
+        <button class="btn-ghost" id="backBtn">← BROWSE</button>
+        <button class="btn-ghost" id="wlAddBtn">+ ADD TO LIST</button>
+        <button class="btn-ghost" id="fullscreenBtn">⛶ FULLSCREEN</button>
+      </div>
+    </div>
+  </div>
+</main>
+</div><!-- /app -->
+
+<script type="module" src="./js/main.js"></script>
 </body>
 </html>
