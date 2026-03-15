@@ -22,6 +22,7 @@ const SHELL_FILES = [
   './manifest.json',
   './js/main.js',
   './js/storage.js',
+  './js/defaults.js',
   './js/api.js',
   './js/library.js',
   './js/player.js',

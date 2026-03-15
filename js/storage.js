@@ -12,7 +12,7 @@
 //   Never rename or remove existing migration steps.
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { DEFAULT_LIBRARY } from './library.js';
+import { DEFAULT_LIBRARY } from './defaults.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STORAGEMANAGER
