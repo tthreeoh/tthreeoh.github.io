@@ -152,7 +152,7 @@ export const StorageManager = (() => {
 
   // ── ff_userdata ───────────────────────────────────────────────────────────
   SCHEMAS['ff_userdata'] = {
-    version: 1,
+    version: 2,
     defaults: () => ({
       favorites:       [],
       groups:          {},
@@ -160,6 +160,7 @@ export const StorageManager = (() => {
       queueAutoRemove: false,
       history:         [],
       continueWatching:{},
+      collections:     {}, // tmdbCollectionId → { id, name, tmdbId, poster, members:[imdbId], followedAt, complete }
     }),
     migrations: {
       1: d => {
@@ -173,8 +174,13 @@ export const StorageManager = (() => {
           history:          Array.isArray(d.history)                ? d.history          : def.history,
           continueWatching: d.continueWatching && typeof d.continueWatching==='object'
                             ? d.continueWatching : def.continueWatching,
+          collections:      {}, // new in v2
         };
       },
+      2: d => ({
+        ...d,
+        collections: (d.collections && typeof d.collections === 'object') ? d.collections : {},
+      }),
     },
   };
 

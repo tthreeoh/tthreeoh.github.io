@@ -286,3 +286,47 @@ export function prefetchIds(ids) {
 export function prefetchCategory(ids) {
   prefetchIds(ids);
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TMDB COLLECTIONS
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Fetch a TMDB collection and resolve IMDb IDs for all parts
+export async function fetchCollection(tmdbCollectionId) {
+  if (!_tmdbKey) return null;
+  const data = await _tmdbFetch(`/collection/${tmdbCollectionId}`);
+  if (!data || !data.parts) return null;
+
+  const parts = data.parts
+    .filter(p => p.media_type !== 'tv')
+    .sort((a, b) => (a.release_date || '').localeCompare(b.release_date || ''));
+
+  // Resolve IMDb IDs via /movie/{id}/external_ids
+  const resolved = await Promise.all(
+    parts.map(async p => {
+      const ext = await _tmdbFetch(`/movie/${p.id}/external_ids`);
+      return ext?.imdb_id ? { imdbId: ext.imdb_id, tmdbId: p.id, title: p.title, poster: p.poster_path ? tmdbPoster(p.poster_path) : '' } : null;
+    })
+  );
+
+  return {
+    id:       data.id,
+    name:     data.name,
+    overview: data.overview || '',
+    poster:   data.poster_path ? tmdbPoster(data.poster_path) : '',
+    backdrop: data.backdrop_path ? tmdbBackdrop(data.backdrop_path) : '',
+    parts:    resolved.filter(Boolean),
+  };
+}
+
+// Search TMDB collections by name
+export async function searchCollections(query) {
+  if (!_tmdbKey) return [];
+  const data = await _tmdbFetch('/search/collection', { query });
+  if (!data?.results) return [];
+  return data.results.slice(0, 8).map(c => ({
+    id:     c.id,
+    name:   c.name,
+    poster: c.poster_path ? tmdbPoster(c.poster_path) : '',
+  }));
+}

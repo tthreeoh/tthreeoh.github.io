@@ -163,6 +163,17 @@ export function initFreeFlowAPI(deps) {
       configure(token, repo, file) { GH.configure(token, repo, file); },
     },
 
+    // ── Collections ──────────────────────────────────────────────────────────
+    collections: {
+      async follow(tmdbCollectionId)   { const m = await import('./userdata.js'); return m.followCollection(tmdbCollectionId); },
+      async unfollow(colId)            { const m = await import('./userdata.js'); m.unfollowCollection(colId); },
+      async refresh(colId)             { const m = await import('./userdata.js'); m.refreshCollection(colId); },
+      all()                            { const ud = _deps.stores.userdata; return Object.values(ud.collections || {}); },
+      has(tmdbColId)                   { const ud = _deps.stores.userdata; return !!(ud.collections || {})[String(tmdbColId)]; },
+      async search(query)              { const m = await import('./api.js'); return m.searchCollections(query); },
+      async fetch(tmdbColId)           { const m = await import('./api.js'); return m.fetchCollection(tmdbColId); },
+    },
+
     // ── Metadata cache ───────────────────────────────────────────────────────
     getMetaCache()    { return JSON.parse(JSON.stringify(_deps.stores.meta)); },
     getCached(id)     { return _deps.stores.meta[id] ? { ..._deps.stores.meta[id] } : null; },

@@ -66,6 +66,9 @@ export async function execLoadPlayer(imdbId, type) {
 
   // Cast strip
   renderCastStrip(d.cast || []);
+
+  // Collection offer (non-blocking)
+  checkCollectionOffer(imdbId).catch(() => {});
 }
 
 export async function loadPlayer(imdbId, type) {
@@ -130,3 +133,40 @@ document.addEventListener('DOMContentLoaded', () => {
     loadBrowse(ct, EL.browseContent, { onCardClick: loadPlayer });
   });
 });
+
+// ── Collection offer — called after execLoadPlayer enriches metadata ──
+export async function checkCollectionOffer(imdbId) {
+  const { metaCache } = await import('./api.js');
+  const meta = metaCache[imdbId];
+  if (!meta?.tmdbId) return;
+
+  // TMDB enrichment puts belongs_to_collection in the details fetch
+  // We need to fetch it directly if not already cached
+  let colId   = meta.collectionId   || null;
+  let colName = meta.collectionName || null;
+
+  if (!colId) {
+    const { _tmdbKey } = await import('./api.js').catch(() => ({}));
+    // Try fetching from TMDB movie details
+    try {
+      const r = await fetch(`https://api.themoviedb.org/3/movie/${meta.tmdbId}?api_key=${_tmdbKey}`);
+      if (r.ok) {
+        const d = await r.json();
+        if (d.belongs_to_collection) {
+          colId   = d.belongs_to_collection.id;
+          colName = d.belongs_to_collection.name;
+          // Cache it
+          meta.collectionId   = colId;
+          meta.collectionName = colName;
+          const { saveMetaCache } = await import('./api.js');
+          saveMetaCache();
+        }
+      }
+    } catch {}
+  }
+
+  if (colId) {
+    const { offerCollection } = await import('./userdata.js');
+    offerCollection(colId, colName);
+  }
+}

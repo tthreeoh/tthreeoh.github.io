@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 let _deps = {};
-export function initUserdata(deps) { _deps = { ..._deps, ...deps }; _wireMyTab(); _wireGroupModal(); }
+export function initUserdata(deps) { _deps = { ..._deps, ...deps }; _wireMyTab(); _wireGroupModal(); _wireCollectionsTab(); }
 
 const ud   = () => _deps.stores.userdata;
 const save = () => _deps.saveUserdata();
@@ -296,8 +296,220 @@ function _wireMyTab() {
 
 export function renderMyTab() {
   const active = document.querySelector('.my-tab.active')?.dataset.mytab;
-  if (active === 'favorites') renderFavorites();
-  if (active === 'queue')     renderQueue();
-  if (active === 'history')   renderHistory();
-  if (active === 'groups')    renderGroups();
+  if (active === 'favorites')   renderFavorites();
+  if (active === 'queue')       renderQueue();
+  if (active === 'history')     renderHistory();
+  if (active === 'groups')      renderGroups();
+  if (active === 'collections') renderCollections();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COLLECTIONS — follow TMDB collections, auto-track new entries
+// ═══════════════════════════════════════════════════════════════════════════
+
+export async function followCollection(tmdbCollectionId) {
+  const { fetchCollection } = await import('./api.js');
+  const data = await fetchCollection(tmdbCollectionId);
+  if (!data) return null;
+  const col = {
+    id:         String(data.id),
+    name:       data.name,
+    tmdbId:     data.id,
+    poster:     data.poster,
+    backdrop:   data.backdrop,
+    overview:   data.overview,
+    members:    data.parts.map(p => p.imdbId),
+    parts:      data.parts, // [{imdbId, tmdbId, title, poster}]
+    followedAt: new Date().toISOString(),
+    updatedAt:  new Date().toISOString(),
+    complete:   false,
+  };
+  ud().collections[String(data.id)] = col;
+  save();
+  renderCollections();
+  return col;
+}
+
+export function unfollowCollection(colId) {
+  delete ud().collections[String(colId)];
+  save();
+  renderCollections();
+}
+
+export function getCollections() {
+  return Object.values(ud().collections || {});
+}
+
+export function isFollowingCollection(tmdbColId) {
+  return !!(ud().collections || {})[String(tmdbColId)];
+}
+
+// Refresh a followed collection — fetch latest from TMDB and add any new entries
+export async function refreshCollection(colId) {
+  const col = (ud().collections || {})[String(colId)];
+  if (!col) return;
+  const { fetchCollection } = await import('./api.js');
+  const fresh = await fetchCollection(col.tmdbId);
+  if (!fresh) return;
+  const newIds = fresh.parts.map(p => p.imdbId);
+  col.members  = newIds;
+  col.parts    = fresh.parts;
+  col.updatedAt = new Date().toISOString();
+  save();
+  renderCollections();
+}
+
+// Mark watched status — complete if all members are in history
+export function updateCollectionComplete(colId) {
+  const col = (ud().collections || {})[String(colId)];
+  if (!col) return;
+  const watched = new Set(ud().history.map(h => h.imdbId));
+  col.complete = col.members.every(id => watched.has(id));
+  save();
+}
+
+function renderCollections() {
+  const container = document.getElementById('collectionsList');
+  const empty     = document.getElementById('collectionsEmpty');
+  const count     = document.getElementById('collectionsCount');
+  if (!container) return;
+
+  const cols = getCollections();
+  count.textContent = cols.length + ' collection' + (cols.length !== 1 ? 's' : '');
+
+  if (!cols.length) {
+    container.innerHTML = '';
+    empty.classList.add('visible');
+    return;
+  }
+  empty.classList.remove('visible');
+  container.innerHTML = '';
+
+  cols.forEach(col => {
+    const div = document.createElement('div');
+    div.className = 'collection-card';
+    const watched = col.members.filter(id => ud().history.some(h => h.imdbId === id)).length;
+    const pct = col.members.length ? Math.round((watched / col.members.length) * 100) : 0;
+
+    div.innerHTML = `
+      <div class="collection-poster-wrap">
+        ${col.poster ? `<img class="collection-poster" src="${col.poster}" alt="">` : '<div class="collection-poster no-poster"></div>'}
+        ${col.complete ? '<span class="collection-complete-badge">✓ COMPLETE</span>' : ''}
+      </div>
+      <div class="collection-info">
+        <div class="collection-name">${col.name}</div>
+        <div class="collection-meta">${col.members.length} titles · ${watched} watched · ${pct}%</div>
+        <div class="collection-progress"><div class="collection-progress-fill" style="width:${pct}%"></div></div>
+        <div class="collection-parts" id="colparts-${col.id}"></div>
+      </div>
+      <div class="collection-actions">
+        <button class="btn-ghost btn-sm col-refresh" data-id="${col.id}" title="Refresh from TMDB">↺</button>
+        <button class="btn-ghost btn-sm col-unfollow" data-id="${col.id}" style="color:var(--red);border-color:var(--red-dim)">UNFOLLOW</button>
+      </div>`;
+
+    // Render parts inline
+    const partsEl = div.querySelector(`#colparts-${col.id}`);
+    col.parts.forEach(p => {
+      const isWatched = ud().history.some(h => h.imdbId === p.imdbId);
+      const part = document.createElement('div');
+      part.className = 'collection-part' + (isWatched ? ' watched' : '');
+      part.innerHTML = `
+        ${p.poster ? `<img src="${p.poster}" class="collection-part-poster" alt="">` : '<div class="collection-part-poster no-poster"></div>'}
+        <span class="collection-part-title">${p.title}</span>
+        ${isWatched ? '<span style="color:var(--green);font-size:9px;flex-shrink:0">✓</span>' : ''}`;
+      part.addEventListener('click', async () => {
+        const m = await import('./player.js');
+        m.loadPlayer(p.imdbId, 'movie');
+      });
+      partsEl.appendChild(part);
+    });
+
+    div.querySelector('.col-refresh').addEventListener('click', async e => {
+      e.stopPropagation();
+      const btn = e.target; btn.textContent = '…';
+      await refreshCollection(col.id);
+      btn.textContent = '↺';
+    });
+    div.querySelector('.col-unfollow').addEventListener('click', e => {
+      e.stopPropagation();
+      if (confirm(`Unfollow "${col.name}"?`)) unfollowCollection(col.id);
+    });
+
+    container.appendChild(div);
+  });
+}
+
+// ── Collection offer banner (shown in player when TMDB reports a collection) ──
+export async function offerCollection(tmdbCollectionId, collectionName) {
+  if (!tmdbCollectionId) return;
+  const existing = document.getElementById('collectionOfferBanner');
+  if (existing) existing.remove();
+
+  const alreadyFollowing = isFollowingCollection(tmdbCollectionId);
+  const banner = document.createElement('div');
+  banner.id = 'collectionOfferBanner';
+  banner.className = 'collection-offer-banner';
+  banner.innerHTML = `
+    <span class="collection-offer-label">Part of <strong>${collectionName}</strong></span>
+    ${alreadyFollowing
+      ? '<span class="collection-offer-status">✓ Following</span>'
+      : `<button class="btn btn-sm collection-offer-follow" data-col="${tmdbCollectionId}" data-name="${collectionName}">+ FOLLOW COLLECTION</button>`
+    }
+    <button class="collection-offer-close">✕</button>`;
+
+  banner.querySelector('.collection-offer-close').addEventListener('click', () => banner.remove());
+
+  if (!alreadyFollowing) {
+    banner.querySelector('.collection-offer-follow').addEventListener('click', async e => {
+      const btn = e.target;
+      btn.textContent = 'Following…'; btn.disabled = true;
+      const col = await followCollection(tmdbCollectionId);
+      if (col) {
+        btn.textContent = '✓ Following';
+        btn.style.background = 'var(--green)';
+      } else {
+        btn.textContent = '✗ Failed'; btn.disabled = false;
+      }
+    });
+  }
+
+  // Insert into player meta area
+  const playerMeta = document.querySelector('.player-meta');
+  if (playerMeta) playerMeta.insertAdjacentElement('afterend', banner);
+}
+
+// Wire collections sub-tab on init (called after _wireMyTab in initUserdata)
+export function _wireCollectionsTab() {
+  // Search form
+  document.getElementById('colSearchBtn')?.addEventListener('click', async () => {
+    const q = document.getElementById('colSearchInput').value.trim();
+    if (!q) return;
+    const btn = document.getElementById('colSearchBtn');
+    btn.textContent = '…'; btn.disabled = true;
+    const { searchCollections } = await import('./api.js');
+    const results = await searchCollections(q);
+    btn.textContent = 'SEARCH'; btn.disabled = false;
+    const res = document.getElementById('colSearchResults');
+    if (!results.length) { res.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:8px 0">No results</div>'; return; }
+    res.innerHTML = '';
+    results.forEach(c => {
+      const row = document.createElement('div');
+      row.className = 'col-search-result';
+      row.innerHTML = `
+        ${c.poster ? `<img src="${c.poster}" style="width:28px;height:42px;object-fit:cover;border:1px solid var(--border);flex-shrink:0">` : '<div style="width:28px;height:42px;background:var(--surface2);border:1px solid var(--border);flex-shrink:0"></div>'}
+        <span style="flex:1;font-size:11px;color:var(--text)">${c.name}</span>
+        <button class="btn btn-sm col-follow-result" data-id="${c.id}" data-name="${c.name}">${isFollowingCollection(c.id) ? '✓ Following' : '+ FOLLOW'}</button>`;
+      row.querySelector('.col-follow-result').addEventListener('click', async e => {
+        const btn = e.target; if (btn.textContent === '✓ Following') return;
+        btn.textContent = '…'; btn.disabled = true;
+        const col = await followCollection(c.id);
+        btn.textContent = col ? '✓ Following' : '✗ Failed';
+        if (col) btn.style.background = 'var(--green)';
+      });
+      res.appendChild(row);
+    });
+  });
+  document.getElementById('colSearchInput')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('colSearchBtn')?.click();
+  });
 }
