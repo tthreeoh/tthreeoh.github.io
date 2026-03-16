@@ -469,6 +469,67 @@
   .group-color-opt:hover { transform: scale(1.15); }
   .group-color-opt.active { border-color: white; transform: scale(1.15); }
 
+  /* Collections */
+  .collection-card {
+    display: flex; gap: 12px; padding: 12px; border: 1px solid var(--border);
+    background: var(--surface2); margin-bottom: 8px;
+  }
+  .collection-poster-wrap { position: relative; flex-shrink: 0; }
+  .collection-poster {
+    width: 60px; height: 90px; object-fit: cover;
+    border: 1px solid var(--border); display: block;
+  }
+  .collection-poster.no-poster { background: var(--surface); }
+  .collection-complete-badge {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(76,175,80,0.85); color: #fff;
+    font-size: 8px; text-align: center; padding: 2px;
+    letter-spacing: 0.05em;
+  }
+  .collection-info { flex: 1; min-width: 0; }
+  .collection-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .collection-meta { font-size: 10px; color: var(--muted); margin-bottom: 6px; }
+  .collection-progress {
+    height: 2px; background: var(--border); margin-bottom: 8px;
+  }
+  .collection-progress-fill { height: 100%; background: var(--red); transition: width 0.3s; }
+  .collection-parts { display: flex; gap: 6px; flex-wrap: wrap; }
+  .collection-part {
+    display: flex; align-items: center; gap: 5px;
+    padding: 3px 6px 3px 3px; border: 1px solid var(--border);
+    background: var(--bg); cursor: pointer; transition: border-color 0.15s;
+    font-size: 10px; color: var(--muted); max-width: 160px;
+  }
+  .collection-part:hover { border-color: var(--red-dim); color: var(--text); }
+  .collection-part.watched { border-color: var(--green-dim); }
+  .collection-part-poster {
+    width: 18px; height: 27px; object-fit: cover;
+    border: 1px solid var(--border); flex-shrink: 0;
+  }
+  .collection-part-poster.no-poster { background: var(--surface2); }
+  .collection-part-title {
+    flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .collection-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+  .collection-offer-banner {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 16px; background: #0d1a2a;
+    border-top: 1px solid #1a3a5a; border-bottom: 1px solid #1a3a5a;
+    font-size: 11px; color: #7ec8e3; flex-shrink: 0;
+  }
+  .collection-offer-label { flex: 1; }
+  .collection-offer-status { color: var(--green); font-size: 10px; }
+  .collection-offer-close {
+    background: none; border: none; color: #444;
+    cursor: pointer; font-size: 14px; padding: 0 4px; transition: color 0.15s;
+  }
+  .collection-offer-close:hover { color: var(--red); }
+  .col-search-result {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px; border: 1px solid var(--border);
+    background: var(--bg);
+  }
+
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
@@ -944,6 +1005,7 @@
       <button class="my-tab" data-mytab="queue">⏱ QUEUE</button>
       <button class="my-tab" data-mytab="history">📖 HISTORY</button>
       <button class="my-tab" data-mytab="groups">⊞ GROUPS</button>
+      <button class="my-tab" data-mytab="collections">◈ COLLECTIONS</button>
     </div>
 
     <!-- FAVORITES -->
@@ -992,6 +1054,21 @@
       </div>
       <div id="groupTree"></div>
       <div class="my-empty" id="groupsEmpty">No groups yet — create one or use FreeFlow.groups.create()</div>
+    </div>
+
+    <!-- COLLECTIONS -->
+    <div class="my-section" id="mysec-collections">
+      <div class="my-sec-header">
+        <span class="my-sec-title">COLLECTIONS</span>
+        <span class="my-sec-count" id="collectionsCount">0 collections</span>
+      </div>
+      <div class="my-sec-search" style="display:flex;gap:8px;margin-bottom:14px;flex-shrink:0">
+        <input id="colSearchInput" class="s-input" type="text" placeholder="Search TMDB collections… e.g. Dark Knight" style="flex:1">
+        <button class="btn" id="colSearchBtn">SEARCH</button>
+      </div>
+      <div id="colSearchResults" style="margin-bottom:14px;display:flex;flex-direction:column;gap:6px"></div>
+      <div id="collectionsList"></div>
+      <div class="my-empty" id="collectionsEmpty">No followed collections yet — search above or open a title that belongs to a franchise</div>
     </div>
 
   </div><!-- /my-panel -->
