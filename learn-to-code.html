@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learn to Code — Language Agnostic</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=Literata:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --border: #e2e0d8;
+    --border-strong: #c8c5bc;
+    --text: #1a1916;
+    --muted: #6b6860;
+    --hint: #9c9a92;
+    --accent: #1a1916;
+    --info-bg: #eef4fd;
+    --info-text: #1a4b8c;
+    --success-bg: #edf7f0;
+    --success-text: #1a6b35;
+    --warn-bg: #fdf6e8;
+    --warn-text: #7a4f00;
+    --danger-bg: #fdf0f0;
+    --danger-text: #8c1a1a;
+    --mono: 'IBM Plex Mono', monospace;
+    --serif: 'Literata', Georgia, serif;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16150f;
+      --surface: #1e1d17;
+      --border: #2e2d26;
+      --border-strong: #44433a;
+      --text: #e8e6df;
+      --muted: #9c9a92;
+      --hint: #6b6860;
+      --accent: #e8e6df;
+      --info-bg: #0d1f3c;
+      --info-text: #7ab3f5;
+      --success-bg: #0d2619;
+      --success-text: #6fca8e;
+      --warn-bg: #2a1e04;
+      --warn-text: #f5c842;
+      --danger-bg: #2a0d0d;
+      --danger-text: #f57a7a;
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; }
+  body {
+    font-family: var(--serif);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.7;
+  }
+
+  /* Layout */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    background: var(--surface);
+  }
+  .site-title { font-size: 1rem; font-weight: 500; letter-spacing: -.01em; }
+  .site-sub { font-size: .8rem; color: var(--muted); font-family: var(--mono); }
+
+  nav {
+    display: flex;
+    gap: 4px;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .nav-tab {
+    font-family: var(--mono);
+    font-size: .75rem;
+    padding: 5px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    color: var(--muted);
+    background: transparent;
+    transition: all .15s;
+  }
+  .nav-tab:hover { color: var(--text); background: var(--bg); }
+  .nav-tab.active {
+    color: var(--text);
+    border-color: var(--border-strong);
+    background: var(--bg);
+    font-weight: 500;
+  }
+
+  main { max-width: 760px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+
+  /* Progress */
+  .progress-bar { display: flex; gap: 5px; margin-bottom: 2rem; }
+  .pip { height: 3px; border-radius: 2px; flex: 1; background: var(--border); transition: background .3s; }
+  .pip.done { background: var(--success-text); }
+  .pip.active { background: var(--text); }
+
+  /* Lesson */
+  .lesson-meta { display: flex; align-items: baseline; gap: 10px; margin-bottom: .4rem; }
+  .lesson-num { font-family: var(--mono); font-size: .75rem; color: var(--hint); }
+  .lesson-title { font-size: 1.35rem; font-weight: 500; letter-spacing: -.02em; }
+  .badge {
+    display: inline-block; font-family: var(--mono); font-size: .7rem;
+    padding: 2px 8px; border-radius: 4px; margin-bottom: 1.25rem;
+  }
+  .badge-concept { background: var(--info-bg); color: var(--info-text); }
+  .badge-done { background: var(--success-bg); color: var(--success-text); }
+
+  .explanation { font-size: .95rem; line-height: 1.8; color: var(--muted); margin-bottom: 1.25rem; }
+  .explanation strong { color: var(--text); font-weight: 500; }
+  .explanation em { font-style: italic; }
+
+  .analogy-box {
+    border-left: 2px solid var(--border-strong);
+    padding: .75rem 1.1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0;
+    font-size: .88rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .analogy-label {
+    font-family: var(--mono); font-size: .68rem; color: var(--hint);
+    letter-spacing: .06em; margin-bottom: .3rem;
+  }
+
+  /* Language tabs */
+  .lang-tabs { display: flex; gap: 6px; margin-bottom: .5rem; flex-wrap: wrap; }
+  .lang-tab {
+    font-family: var(--mono); font-size: .72rem; padding: 4px 12px;
+    border-radius: 5px; cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--bg); color: var(--muted);
+    transition: all .15s;
+  }
+  .lang-tab:hover { color: var(--text); border-color: var(--border-strong); }
+  .lang-tab.active {
+    background: var(--text); color: var(--bg);
+    border-color: var(--text);
+  }
+
+  /* Code block */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1rem;
+    font-family: var(--mono); font-size: .82rem; line-height: 1.7;
+    white-space: pre; overflow-x: auto;
+    tab-size: 4;
+  }
+  .ck { color: var(--info-text); }
+  .cs { color: var(--success-text); }
+  .cn { color: var(--warn-text); }
+  .cc { color: var(--hint); font-style: italic; }
+
+  /* Why box */
+  .why-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: .8rem 1rem;
+    margin-bottom: 1.5rem;
+    font-size: .85rem; color: var(--muted); line-height: 1.7;
+  }
+  .why-box code { font-family: var(--mono); font-size: .8rem; color: var(--text); }
+  .why-label {
+    font-family: var(--mono); font-size: .68rem; color: var(--hint);
+    letter-spacing: .06em; margin-bottom: .3rem;
+  }
+
+  /* Nav buttons */
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: .5rem; }
+  .step-counter { font-family: var(--mono); font-size: .72rem; color: var(--hint); }
+  .btn {
+    font-family: var(--mono); font-size: .78rem; padding: 7px 18px;
+    border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--border-strong);
+    background: transparent; color: var(--text);
+    transition: all .15s;
+  }
+  .btn:hover { background: var(--surface); }
+  .btn:disabled { opacity: .35; cursor: default; }
+  .btn.primary {
+    background: var(--text); color: var(--bg);
+    border-color: var(--text);
+  }
+  .btn.primary:hover { opacity: .85; }
+
+  /* Exercise */
+  .ex-prompt { font-size: .92rem; line-height: 1.8; color: var(--muted); margin-bottom: 1.1rem; }
+  .ex-prompt strong { color: var(--text); font-weight: 500; }
+  .ex-prompt em { font-style: italic; color: var(--text); }
+  .ex-starter {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    margin-bottom: .75rem;
+    font-family: var(--mono); font-size: .82rem; line-height: 1.7;
+    white-space: pre; overflow-x: auto;
+  }
+  .gap {
+    background: var(--warn-bg); color: var(--warn-text);
+    border-radius: 3px; padding: 0 4px;
+    font-family: var(--mono); font-size: .78rem;
+  }
+  textarea {
+    width: 100%; min-height: 120px;
+    font-family: var(--mono); font-size: .82rem; line-height: 1.6;
+    padding: .85rem 1rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-strong);
+    background: var(--surface); color: var(--text);
+    resize: vertical; outline: none;
+    margin-bottom: .75rem;
+    transition: border-color .15s;
+    tab-size: 4;
+  }
+  textarea:focus { border-color: var(--text); }
+  .btn-row { display: flex; gap: 8px; align-items: center; margin-bottom: 1rem; }
+  .feedback {
+    font-family: var(--mono); font-size: .8rem; line-height: 1.6;
+    padding: .75rem 1rem; border-radius: var(--radius);
+    margin-bottom: 1rem; border-left: 2px solid;
+  }
+  .feedback.pass { background: var(--success-bg); color: var(--success-text); border-color: var(--success-text); }
+  .feedback.fail { background: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-text); }
+  .feedback.hint { background: var(--warn-bg); color: var(--warn-text); border-color: var(--warn-text); }
+
+  .section { display: none; }
+  .section.active { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="site-title">Learn to code</div>
+    <div class="site-sub">language-agnostic · beginner</div>
+  </div>
+</header>
+
+<nav>
+  <button class="nav-tab active" onclick="showSection('lessons')">Lessons</button>
+  <button class="nav-tab" onclick="showSection('exercises')">Exercises</button>
+</nav>
+
+<main>
+
+<!-- LESSONS -->
+<div id="lessons" class="section active">
+  <div class="progress-bar" id="lesson-pips"></div>
+  <div id="lesson-content"></div>
+</div>
+
+<!-- EXERCISES -->
+<div id="exercises" class="section">
+  <div class="progress-bar" id="ex-pips"></div>
+  <div id="ex-content"></div>
+</div>
+
+</main>
+
+<script>
+/* ── DATA ─────────────────────────────────────────────── */
+
+const lessons = [
+  {
+    title: "Variables — giving things names",
+    concept: "Core concept",
+    explanation: `A <strong>variable</strong> is just a label you stick on a piece of information so you can find it later. Every language does this — the syntax is different, but the idea is identical: you're saying <em>"remember this, call it that."</em>`,
+    analogy: `Think of a sticky note. You write "John's number" on it and stick it to your monitor. The label is the variable name. The phone number is the value. You can peel it off and stick a new number under the same label — that's reassignment.`,
+    langs: {
+      Python:
+`<span class="cc"># Python — just write name = value</span>
+name = <span class="cs">"Alex"</span>
+age  = <span class="cn">28</span>
+
+print(name)   <span class="cc"># Alex</span>
+print(age)    <span class="cc"># 28</span>`,
+      JavaScript:
+`<span class="cc">// JavaScript — prefix with let or const</span>
+<span class="ck">let</span> name = <span class="cs">"Alex"</span>
+<span class="ck">const</span> age  = <span class="cn">28</span>  <span class="cc">// const = can't change later</span>
+
+console.log(name)  <span class="cc">// Alex</span>
+console.log(age)   <span class="cc">// 28</span>`,
+      PowerShell:
+`<span class="cc"># PowerShell — prefix with $</span>
+<span class="ck">$name</span> = <span class="cs">"Alex"</span>
+<span class="ck">$age</span>  = <span class="cn">28</span>
+
+Write-Output <span class="ck">$name</span>   <span class="cc"># Alex</span>
+Write-Output <span class="ck">$age</span>    <span class="cc"># 28</span>`,
+    },
+    why: `Different languages use different syntax, but they all solve the same problem: humans are bad at remembering raw data. Variable names are for people, not computers. A variable named <code>userAge</code> is infinitely clearer than the number <code>28</code> floating around your code.`,
+  },
+  {
+    title: "If / else — making decisions",
+    concept: "Control flow",
+    explanation: `Code runs top to bottom by default. <strong>If/else</strong> lets you say "only run this block when a condition is true." It's a fork in the road — the program takes one path or the other based on real data.`,
+    analogy: `An if/else is like a bouncer at a door. IF you're on the list, you get in. ELSE, you don't. The bouncer doesn't care how the list was made — they just check and decide. Your program does the same thing with any condition you define.`,
+    langs: {
+      Python:
+`<span class="ck">if</span> age >= <span class="cn">18</span>:
+    print(<span class="cs">"Can vote"</span>)
+<span class="ck">elif</span> age >= <span class="cn">16</span>:
+    print(<span class="cs">"Can drive (some places)"</span>)
+<span class="ck">else</span>:
+    print(<span class="cs">"Not yet"</span>)`,
+      JavaScript:
+`<span class="ck">if</span> (age >= <span class="cn">18</span>) {
+    console.log(<span class="cs">"Can vote"</span>)
+} <span class="ck">else if</span> (age >= <span class="cn">16</span>) {
+    console.log(<span class="cs">"Can drive (some places)"</span>)
+} <span class="ck">else</span> {
+    console.log(<span class="cs">"Not yet"</span>)
+}`,
+      PowerShell:
+`<span class="ck">if</span> (<span class="ck">$age</span> -ge <span class="cn">18</span>) {
+    <span class="cs">"Can vote"</span>
+} <span class="ck">elseif</span> (<span class="ck">$age</span> -ge <span class="cn">16</span>) {
+    <span class="cs">"Can drive (some places)"</span>
+} <span class="ck">else</span> {
+    <span class="cs">"Not yet"</span>
+}`,
+    },
+    why: `The braces <code>{ }</code> in JavaScript and PowerShell and the colon + indent in Python both do the same thing: they group lines together into a "block." When the condition is true, the whole block runs. When false, it's skipped entirely.`,
+  },
+  {
+    title: "Loops — repeating things",
+    concept: "Control flow",
+    explanation: `A <strong>loop</strong> runs the same block of code multiple times — usually once per item in a list, or until a condition is no longer true. Computers are great at repetition; this is why they exist.`,
+    analogy: `Imagine you have a stack of 50 invoices to stamp. You don't write "stamp invoice" 50 times — you write it once and say "do this for every invoice in the stack." A loop is that instruction.`,
+    langs: {
+      Python:
+`fruits = [<span class="cs">"apple"</span>, <span class="cs">"banana"</span>, <span class="cs">"cherry"</span>]
+
+<span class="ck">for</span> fruit <span class="ck">in</span> fruits:
+    print(fruit)
+
+<span class="cc"># apple</span>
+<span class="cc"># banana</span>
+<span class="cc"># cherry</span>`,
+      JavaScript:
+`<span class="ck">const</span> fruits = [<span class="cs">"apple"</span>, <span class="cs">"banana"</span>, <span class="cs">"cherry"</span>]
+
+<span class="ck">for</span> (<span class="ck">const</span> fruit <span class="ck">of</span> fruits) {
+    console.log(fruit)
+}
+
+<span class="cc">// apple  banana  cherry</span>`,
+      PowerShell:
+`<span class="ck">$fruits</span> = @(<span class="cs">"apple"</span>, <span class="cs">"banana"</span>, <span class="cs">"cherry"</span>)
+
+<span class="ck">foreach</span> (<span class="ck">$fruit</span> <span class="ck">in</span> <span class="ck">$fruits</span>) {
+    Write-Output <span class="ck">$fruit</span>
+}
+
+<span class="cc"># apple  banana  cherry</span>`,
+    },
+    why: `Every language has loops — the keyword changes, but the concept never does. Python's <code>for x in list</code>, JavaScript's <code>for...of</code>, PowerShell's <code>foreach</code> — all identical logic. Once you understand one, you understand them all.`,
+  },
+  {
+    title: "Functions — reusable instructions",
+    concept: "Organization",
+    explanation: `A <strong>function</strong> is a named block of code you write once and run whenever you need it. You give it inputs (called <em>parameters</em>), it does something, and optionally hands back a result. Functions are how you stop copy-pasting.`,
+    analogy: `A recipe is a function. "Make pasta" takes ingredients (parameters), follows steps, and produces dinner (a return value). You can make pasta on Monday and Friday without rewriting the recipe — you just call it.`,
+    langs: {
+      Python:
+`<span class="ck">def</span> greet(name):
+    <span class="ck">return</span> <span class="cs">f"Hello, {name}!"</span>
+
+print(greet(<span class="cs">"Alex"</span>))    <span class="cc"># Hello, Alex!</span>
+print(greet(<span class="cs">"Jordan"</span>))  <span class="cc"># Hello, Jordan!</span>`,
+      JavaScript:
+`<span class="ck">function</span> greet(name) {
+    <span class="ck">return</span> <span class="cs">\`Hello, \${name}!\`</span>
+}
+
+console.log(greet(<span class="cs">"Alex"</span>))    <span class="cc">// Hello, Alex!</span>
+console.log(greet(<span class="cs">"Jordan"</span>))  <span class="cc">// Hello, Jordan!</span>`,
+      PowerShell:
+`<span class="ck">function</span> Greet(<span class="ck">$name</span>) {
+    <span class="ck">return</span> <span class="cs">"Hello, $name!"</span>
+}
+
+Greet <span class="cs">"Alex"</span>    <span class="cc"># Hello, Alex!</span>
+Greet <span class="cs">"Jordan"</span>  <span class="cc"># Hello, Jordan!</span>`,
+    },
+    why: `Every language defines functions differently — <code>def</code>, <code>function</code>, <code>function</code> — but the shape is always: name, inputs, body, optional return. If you change the logic later, you change it in one place and every caller benefits.`,
+  },
+  {
+    title: "Why different languages?",
+    concept: "The big picture",
+    explanation: `You've now seen 4 core concepts — variables, conditions, loops, functions — in three different languages. The code looks different, but the <strong>thinking is identical</strong>. So why do multiple languages exist?`,
+    analogy: `French and English can both express the same ideas. But if your audience is French, you write in French. Languages are chosen for their audience: the runtime, the ecosystem, the tools around them — not because one is "smarter."`,
+    langs: {
+      Python:
+`<span class="cc"># Python: great for data, scripting, automation</span>
+<span class="cc"># Readable syntax, massive library ecosystem</span>
+<span class="cc"># Used by: data scientists, ML engineers, sysadmins</span>
+
+import os
+files = os.listdir(<span class="cs">"."</span>)
+<span class="ck">for</span> f <span class="ck">in</span> files:
+    print(f)`,
+      JavaScript:
+`<span class="cc">// JavaScript: the language of the web browser</span>
+<span class="cc">// Runs natively in Chrome, Firefox, Edge — no install</span>
+<span class="cc">// Used by: web devs, front-end, Node.js backends</span>
+
+document.getElementById(<span class="cs">"btn"</span>)
+    .addEventListener(<span class="cs">"click"</span>, () => {
+        alert(<span class="cs">"Clicked!"</span>)
+    })`,
+      PowerShell:
+`<span class="cc"># PowerShell: built for Windows administration</span>
+<span class="cc"># Deep integration with Windows APIs and AD</span>
+<span class="cc"># Used by: IT admins, sysadmins, DevOps</span>
+
+Get-ADUser -Filter * |
+    Where-Object { <span class="ck">$_</span>.Enabled } |
+    Select-Object Name, Department`,
+    },
+    why: `Pick the language that fits the job. Python for scripts and data. JavaScript for web. PowerShell for Windows IT. The concepts you've learned — variables, conditions, loops, functions — transfer completely. The syntax is just accents.`,
+  },
+];
+
+const exercises = [
+  {
+    title: "Name tag",
+    concept: "Variables",
+    prompt: `Create two variables: one called <strong>name</strong> holding your name as text, and one called <strong>age</strong> holding any number. Then print both of them.`,
+    starters: {
+      Python:
+`<span class="cc"># Create your variables here</span>
+name = <span class="gap">___</span>
+age  = <span class="gap">___</span>
+
+print(name)
+print(age)`,
+      JavaScript:
+`<span class="cc">// Create your variables here</span>
+<span class="ck">let</span> name = <span class="gap">___</span>
+<span class="ck">let</span> age  = <span class="gap">___</span>
+
+console.log(name)
+console.log(age)`,
+      PowerShell:
+`<span class="cc"># Create your variables here</span>
+<span class="ck">$name</span> = <span class="gap">___</span>
+<span class="ck">$age</span>  = <span class="gap">___</span>
+
+Write-Output <span class="ck">$name</span>
+Write-Output <span class="ck">$age</span>`,
+    },
+    placeholders: {
+      Python: `name = "Alex"\nage = 28\n\nprint(name)\nprint(age)`,
+      JavaScript: `let name = "Alex"\nlet age = 28\n\nconsole.log(name)\nconsole.log(age)`,
+      PowerShell: `$name = "Alex"\n$age = 28\n\nWrite-Output $name\nWrite-Output $age`,
+    },
+    checks: {
+      Python(code) {
+        if (!/name\s*=\s*["'][^"']+["']/.test(code)) return { ok: false, msg: `Set name to a text value in quotes — like "Alex".` };
+        if (!/age\s*=\s*\d+/.test(code)) return { ok: false, msg: `Set age to a number — no quotes needed.` };
+        if (!(/print\(name\)/.test(code) && /print\(age\)/.test(code))) return { ok: false, msg: `Use print(name) and print(age) to show them.` };
+        return { ok: true };
+      },
+      JavaScript(code) {
+        if (!/(let|const)\s+name\s*=\s*["'][^"']+["']/.test(code)) return { ok: false, msg: `Declare name with let and assign a text value in quotes.` };
+        if (!/(let|const)\s+age\s*=\s*\d+/.test(code)) return { ok: false, msg: `Declare age with let and assign a number.` };
+        if (!(/console\.log\(name\)/.test(code) && /console\.log\(age\)/.test(code))) return { ok: false, msg: `Use console.log(name) and console.log(age).` };
+        return { ok: true };
+      },
+      PowerShell(code) {
+        if (!/\$name\s*=\s*["'][^"']+["']/.test(code)) return { ok: false, msg: `Set $name to a text value in quotes.` };
+        if (!/\$age\s*=\s*\d+/.test(code)) return { ok: false, msg: `Set $age to a number.` };
+        if (!(/Write-Output\s+\$name/.test(code) && /Write-Output\s+\$age/.test(code))) return { ok: false, msg: `Use Write-Output $name and Write-Output $age.` };
+        return { ok: true };
+      },
+    },
+  },
+  {
+    title: "Old enough?",
+    concept: "If / else",
+    prompt: `Given a variable <strong>age</strong> set to any number, write an if/else that prints <em>"Can vote"</em> if age is 18 or over, or <em>"Too young"</em> if not.`,
+    starters: {
+      Python:
+`age = <span class="cn">16</span>
+
+<span class="ck">if</span> <span class="gap">___</span>:
+    print(<span class="cs">"Can vote"</span>)
+<span class="ck">else</span>:
+    print(<span class="cs">"Too young"</span>)`,
+      JavaScript:
+`<span class="ck">const</span> age = <span class="cn">16</span>
+
+<span class="ck">if</span> (<span class="gap">___</span>) {
+    console.log(<span class="cs">"Can vote"</span>)
+} <span class="ck">else</span> {
+    console.log(<span class="cs">"Too young"</span>)
+}`,
+      PowerShell:
+`<span class="ck">$age</span> = <span class="cn">16</span>
+
+<span class="ck">if</span> (<span class="gap">___</span>) {
+    <span class="cs">"Can vote"</span>
+} <span class="ck">else</span> {
+    <span class="cs">"Too young"</span>
+}`,
+    },
+    placeholders: {
+      Python: `age = 16\n\nif age >= 18:\n    print("Can vote")\nelse:\n    print("Too young")`,
+      JavaScript: `const age = 16\n\nif (age >= 18) {\n    console.log("Can vote")\n} else {\n    console.log("Too young")\n}`,
+      PowerShell: `$age = 16\n\nif ($age -ge 18) {\n    "Can vote"\n} else {\n    "Too young"\n}`,
+    },
+    checks: {
+      Python(code) {
+        if (!/if\s+age\s*>=\s*18/.test(code)) return { ok: false, msg: `The condition should be: age >= 18` };
+        if (!/print\s*\(\s*["']Can vote["']\s*\)/.test(code)) return { ok: false, msg: `Print exactly "Can vote" in the if block.` };
+        if (!/print\s*\(\s*["']Too young["']\s*\)/.test(code)) return { ok: false, msg: `Print exactly "Too young" in the else block.` };
+        return { ok: true };
+      },
+      JavaScript(code) {
+        if (!/age\s*>=\s*18/.test(code)) return { ok: false, msg: `The condition should be: age >= 18` };
+        if (!/["']Can vote["']/.test(code)) return { ok: false, msg: `Log "Can vote" in the if block.` };
+        if (!/["']Too young["']/.test(code)) return { ok: false, msg: `Log "Too young" in the else block.` };
+        return { ok: true };
+      },
+      PowerShell(code) {
+        if (!/\$age\s*-ge\s*18/.test(code) && !/\$age\s*>=\s*18/.test(code)) return { ok: false, msg: `Use $age -ge 18 as your condition.` };
+        if (!/["']Can vote["']/.test(code)) return { ok: false, msg: `Output "Can vote" in the if block.` };
+        if (!/["']Too young["']/.test(code)) return { ok: false, msg: `Output "Too young" in the else block.` };
+        return { ok: true };
+      },
+    },
+  },
+  {
+    title: "Print the list",
+    concept: "Loops",
+    prompt: `You have a list: <strong>["Sam", "Jordan", "Riley"]</strong>. Write a loop that prints each name on its own line.`,
+    starters: {
+      Python:
+`names = [<span class="cs">"Sam"</span>, <span class="cs">"Jordan"</span>, <span class="cs">"Riley"</span>]
+
+<span class="ck">for</span> <span class="gap">___</span> <span class="ck">in</span> names:
+    print(<span class="gap">___</span>)`,
+      JavaScript:
+`<span class="ck">const</span> names = [<span class="cs">"Sam"</span>, <span class="cs">"Jordan"</span>, <span class="cs">"Riley"</span>]
+
+<span class="ck">for</span> (<span class="ck">const</span> <span class="gap">___</span> <span class="ck">of</span> names) {
+    console.log(<span class="gap">___</span>)
+}`,
+      PowerShell:
+`<span class="ck">$names</span> = @(<span class="cs">"Sam"</span>, <span class="cs">"Jordan"</span>, <span class="cs">"Riley"</span>)
+
+<span class="ck">foreach</span> (<span class="ck">$<span class="gap">___</span></span> <span class="ck">in</span> <span class="ck">$names</span>) {
+    Write-Output <span class="ck">$<span class="gap">___</span></span>
+}`,
+    },
+    placeholders: {
+      Python: `names = ["Sam", "Jordan", "Riley"]\n\nfor name in names:\n    print(name)`,
+      JavaScript: `const names = ["Sam", "Jordan", "Riley"]\n\nfor (const name of names) {\n    console.log(name)\n}`,
+      PowerShell: `$names = @("Sam", "Jordan", "Riley")\n\nforeach ($name in $names) {\n    Write-Output $name\n}`,
+    },
+    checks: {
+      Python(code) {
+        const m = code.match(/for\s+(\w+)\s+in\s+names/);
+        if (!m) return { ok: false, msg: `Use: for <variable> in names:` };
+        if (!new RegExp(`print\\(\\s*${m[1]}\\s*\\)`).test(code)) return { ok: false, msg: `Inside the loop, print your loop variable (${m[1]}).` };
+        return { ok: true };
+      },
+      JavaScript(code) {
+        const m = code.match(/for\s*\(\s*(?:let|const)\s+(\w+)\s+of\s+names\s*\)/);
+        if (!m) return { ok: false, msg: `Use: for (const <variable> of names)` };
+        if (!new RegExp(`console\\.log\\(\\s*${m[1]}\\s*\\)`).test(code)) return { ok: false, msg: `Inside the loop, log your variable (${m[1]}).` };
+        return { ok: true };
+      },
+      PowerShell(code) {
+        const m = code.match(/foreach\s*\(\s*\$(\w+)\s+in\s+\$names\s*\)/i);
+        if (!m) return { ok: false, msg: `Use: foreach ($<variable> in $names)` };
+        if (!new RegExp(`Write-Output\\s+\\$${m[1]}`, 'i').test(code)) return { ok: false, msg: `Inside the loop, Write-Output your variable ($${m[1]}).` };
+        return { ok: true };
+      },
+    },
+  },
+  {
+    title: "Greeter function",
+    concept: "Functions",
+    prompt: `Write a function called <strong>greet</strong> that takes one parameter called <strong>name</strong> and returns the string <em>"Hello, [name]!"</em>. Then call it with any name.`,
+    starters: {
+      Python:
+`<span class="ck">def</span> greet(<span class="gap">___</span>):
+    <span class="ck">return</span> <span class="gap">___</span>
+
+print(greet(<span class="cs">"Alex"</span>))`,
+      JavaScript:
+`<span class="ck">function</span> greet(<span class="gap">___</span>) {
+    <span class="ck">return</span> <span class="gap">___</span>
+}
+
+console.log(greet(<span class="cs">"Alex"</span>))`,
+      PowerShell:
+`<span class="ck">function</span> Greet(<span class="gap">___</span>) {
+    <span class="ck">return</span> <span class="gap">___</span>
+}
+
+Greet <span class="cs">"Alex"</span>`,
+    },
+    placeholders: {
+      Python: `def greet(name):\n    return f"Hello, {name}!"\n\nprint(greet("Alex"))`,
+      JavaScript: `function greet(name) {\n    return \`Hello, \${name}!\`\n}\n\nconsole.log(greet("Alex"))`,
+      PowerShell: `function Greet($name) {\n    return "Hello, $name!"\n}\n\nGreet "Alex"`,
+    },
+    checks: {
+      Python(code) {
+        if (!/def\s+greet\s*\(\s*\w+\s*\)/.test(code)) return { ok: false, msg: `Define the function: def greet(name):` };
+        if (!/return/.test(code)) return { ok: false, msg: `The function needs a return statement.` };
+        if (!/Hello/.test(code)) return { ok: false, msg: `The returned string should contain "Hello".` };
+        if (!/print\s*\(\s*greet\s*\(/.test(code)) return { ok: false, msg: `Call greet() inside print().` };
+        return { ok: true };
+      },
+      JavaScript(code) {
+        if (!/function\s+greet\s*\(\s*\w+\s*\)/.test(code)) return { ok: false, msg: `Define the function: function greet(name) { }` };
+        if (!/return/.test(code)) return { ok: false, msg: `The function needs a return statement.` };
+        if (!/Hello/.test(code)) return { ok: false, msg: `The returned string should contain "Hello".` };
+        if (!/console\.log\s*\(\s*greet\s*\(/.test(code)) return { ok: false, msg: `Call greet() inside console.log().` };
+        return { ok: true };
+      },
+      PowerShell(code) {
+        if (!/function\s+Greet\s*\(\s*\$\w+\s*\)/i.test(code)) return { ok: false, msg: `Define the function: function Greet($name) { }` };
+        if (!/return/.test(code)) return { ok: false, msg: `The function needs a return statement.` };
+        if (!/Hello/.test(code)) return { ok: false, msg: `The returned string should contain "Hello".` };
+        if (!/Greet\s+["']/.test(code) && !/Greet\s+\$/.test(code)) return { ok: false, msg: `Call the function: Greet "Alex"` };
+        return { ok: true };
+      },
+    },
+  },
+];
+
+/* ── STATE ─────────────────────────────────────────────── */
+
+let lessonIdx = 0;
+let lessonLang = 'Python';
+let exIdx = 0;
+let exLang = 'Python';
+let exDone = [];
+let feedback = null;
+
+/* ── RENDER ────────────────────────────────────────────── */
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  if (id === 'lessons') renderLesson();
+  else renderExercise();
+}
+
+function renderLesson() {
+  const l = lessons[lessonIdx];
+  const langs = Object.keys(l.langs);
+  if (!langs.includes(lessonLang)) lessonLang = langs[0];
+
+  document.getElementById('lesson-pips').innerHTML = lessons.map((_, i) => {
+    const cls = i < lessonIdx ? 'done' : i === lessonIdx ? 'active' : '';
+    return `<div class="pip ${cls}"></div>`;
+  }).join('');
+
+  const tabs = langs.map(lang =>
+    `<button class="lang-tab ${lang === lessonLang ? 'active' : ''}" onclick="setLessonLang('${lang}')">${lang}</button>`
+  ).join('');
+
+  document.getElementById('lesson-content').innerHTML = `
+    <div class="lesson-meta">
+      <span class="lesson-num">${lessonIdx + 1} / ${lessons.length}</span>
+      <span class="lesson-title">${l.title}</span>
+    </div>
+    <span class="badge badge-concept">${l.concept}</span>
+    <p class="explanation">${l.explanation}</p>
+    <div class="analogy-box">
+      <div class="analogy-label">ANALOGY</div>
+      ${l.analogy}
+    </div>
+    <div class="lang-tabs">${tabs}</div>
+    <div class="code-block">${l.langs[lessonLang]}</div>
+    <div class="why-box">
+      <div class="why-label">WHY THIS MATTERS</div>
+      ${l.why}
+    </div>
+    <div class="nav-row">
+      <button class="btn" onclick="goLesson(-1)" ${lessonIdx === 0 ? 'disabled' : ''}>← Back</button>
+      <span class="step-counter">${lessonIdx + 1} of ${lessons.length}</span>
+      ${lessonIdx < lessons.length - 1
+        ? `<button class="btn primary" onclick="goLesson(1)">Next →</button>`
+        : `<button class="btn primary" onclick="jumpToExercises()">Try exercises →</button>`}
+    </div>
+  `;
+}
+
+function renderExercise() {
+  const ex = exercises[exIdx];
+  const langs = Object.keys(ex.starters);
+  if (!langs.includes(exLang)) exLang = langs[0];
+
+  document.getElementById('ex-pips').innerHTML = exercises.map((_, i) => {
+    const cls = exDone.includes(i) ? 'done' : i === exIdx ? 'active' : '';
+    return `<div class="pip ${cls}"></div>`;
+  }).join('');
+
+  const tabs = langs.map(lang =>
+    `<button class="lang-tab ${lang === exLang ? 'active' : ''}" onclick="setExLang('${lang}')">${lang}</button>`
+  ).join('');
+
+  const fb = feedback
+    ? `<div class="feedback ${feedback.cls}">${feedback.msg}</div>`
+    : '';
+
+  const isDone = exDone.includes(exIdx);
+
+  document.getElementById('ex-content').innerHTML = `
+    <div class="lesson-meta">
+      <span class="lesson-num">${exIdx + 1} / ${exercises.length}</span>
+      <span class="lesson-title">${ex.title}</span>
+    </div>
+    <span class="badge ${isDone ? 'badge-done' : 'badge-concept'}">${isDone ? 'Complete' : ex.concept}</span>
+    <p class="ex-prompt">${ex.prompt}</p>
+    <div class="lang-tabs">${tabs}</div>
+    <div class="ex-starter">${ex.starters[exLang]}</div>
+    <textarea id="ex-input" placeholder="${ex.placeholders[exLang]}" spellcheck="false"></textarea>
+    ${fb}
+    <div class="btn-row">
+      <button class="btn primary" onclick="checkAnswer()">Check answer</button>
+      <button class="btn" onclick="showHint()">Hint</button>
+      <button class="btn" onclick="showSolution()">Show solution</button>
+    </div>
+    <div class="nav-row">
+      <button class="btn" onclick="goEx(-1)" ${exIdx === 0 ? 'disabled' : ''}>← Back</button>
+      <span class="step-counter">${exIdx + 1} of ${exercises.length}</span>
+      <button class="btn primary" onclick="goEx(1)" ${exIdx === exercises.length - 1 ? 'disabled' : ''}>Next →</button>
+    </div>
+  `;
+}
+
+/* ── ACTIONS ───────────────────────────────────────────── */
+
+function setLessonLang(lang) { lessonLang = lang; renderLesson(); }
+function setExLang(lang) { exLang = lang; feedback = null; renderExercise(); }
+
+function goLesson(dir) {
+  lessonIdx = Math.max(0, Math.min(lessons.length - 1, lessonIdx + dir));
+  renderLesson();
+}
+
+function goEx(dir) {
+  exIdx = Math.max(0, Math.min(exercises.length - 1, exIdx + dir));
+  feedback = null;
+  renderExercise();
+}
+
+function jumpToExercises() {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab')[1].classList.add('active');
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('exercises').classList.add('active');
+  renderExercise();
+}
+
+function checkAnswer() {
+  const code = document.getElementById('ex-input').value.trim();
+  if (!code) { feedback = { cls: 'hint', msg: 'Write some code first, then check.' }; renderExercise(); return; }
+  const ex = exercises[exIdx];
+  const result = ex.checks[exLang](code);
+  if (result.ok) {
+    feedback = { cls: 'pass', msg: 'Correct! That works.' };
+    if (!exDone.includes(exIdx)) exDone.push(exIdx);
+  } else {
+    feedback = { cls: 'fail', msg: result.msg };
+  }
+  renderExercise();
+  document.getElementById('ex-input').value = code;
+}
+
+function showHint() {
+  const ex = exercises[exIdx];
+  const hints = {
+    Python: { 0: `Text values go in quotes: name = "Alex"`, 1: `Your condition: age >= 18`, 2: `for name in names:`, 3: `def greet(name): then return the string` },
+    JavaScript: { 0: `let name = "Alex"`, 1: `if (age >= 18) {`, 2: `for (const name of names) {`, 3: `function greet(name) { return \`Hello, \${name}!\` }` },
+    PowerShell: { 0: `$name = "Alex"`, 1: `if ($age -ge 18) {`, 2: `foreach ($name in $names) {`, 3: `function Greet($name) { return "Hello, $name!" }` },
+  };
+  feedback = { cls: 'hint', msg: `Hint: ${hints[exLang][exIdx]}` };
+  renderExercise();
+  const ta = document.getElementById('ex-input');
+  if (ta) ta.value = document.getElementById('ex-input').value;
+}
+
+function showSolution() {
+  const ex = exercises[exIdx];
+  feedback = { cls: 'hint', msg: `Solution:\n${ex.placeholders[exLang]}` };
+  renderExercise();
+}
+
+/* ── INIT ──────────────────────────────────────────────── */
+renderLesson();
+</script>
+</body>
+</html>
