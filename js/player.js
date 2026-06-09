@@ -9,8 +9,8 @@ export async function execLoadPlayer(imdbId, type) {
   const { EL, stores, fetchFull, setContinueWatching, getContinueWatching, updateAddBtn } = _deps;
 
   EL.playerIframe.src = type === 'series'
-    ? `https://vidsrc.ru/embed/tv?imdb=${imdbId}&season=1&episode=1`
-    : `https://vidsrc.ru/embed/movie?imdb=${imdbId}`;
+    ? `https://vidsrcme.ru/embed/tv?imdb=${imdbId}&season=1&episode=1`
+    : `https://vidsrcme.ru/embed/movie?imdb=${imdbId}`;
 
   const d = await fetchFull(imdbId);
   if (d.Response !== 'True') return;
