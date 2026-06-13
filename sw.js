@@ -35,8 +35,7 @@ const SHELL_FILES = [
 ];
 
 const NEVER_CACHE = [
-  'vidsrc.me',      // playback — always needs live connection
-  'vidsrc.to',
+  'vidsrcme.ru',      // playback — always needs live connection
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
