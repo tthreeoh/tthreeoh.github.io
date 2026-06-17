@@ -104,6 +104,7 @@ async function replayEntry(e) {
   if (e.type === 'browse') {
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === e.tab));
     currentTab = e.tab; EL.searchInput.value = '';
+    rememberActiveTab(e.tab);
     showBrowse(); await loadBrowse(e.tab, EL.browseContent, { onCardClick: loadPlayer });
   } else if (e.type === 'search') {
     EL.searchInput.value = e.query; showBrowse();
@@ -113,6 +114,7 @@ async function replayEntry(e) {
   } else if (e.type === 'my') {
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'my'));
     currentTab = 'my'; showMyTab();
+    rememberActiveTab('my');
   }
 }
 
@@ -128,6 +130,15 @@ document.addEventListener('keydown', e => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export let currentTab = 'trending';
+const STARTUP_TABS = ['trending','movies','tv','my'];
+
+function validTab(tab) { return STARTUP_TABS.includes(tab) ? tab : 'trending'; }
+function tabLabel(tab) { return tab === 'my' ? 'MY ★' : tab[0].toUpperCase() + tab.slice(1); }
+function rememberActiveTab(tab) {
+  if (!stores.prefs.rememberLastTab) return;
+  stores.prefs.lastActiveTab = validTab(tab);
+  savePrefs();
+}
 
 export function showBrowse() {
   EL.browsePanel.classList.add('visible');
@@ -180,6 +191,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     const t = tab.dataset.tab;
     if (t === 'my') {
       currentTab = 'my';
+      rememberActiveTab(t);
       EL.searchInput.value = '';
       showMyTab();
       pushHistory({ type: 'my', label: 'MY ★' });
@@ -187,6 +199,7 @@ document.querySelectorAll('.tab').forEach(tab => {
       return;
     }
     currentTab = t;
+    rememberActiveTab(t);
     EL.searchInput.value = '';
     hideMyTab();
     pushHistory({ type: 'browse', tab: t, label: t[0].toUpperCase() + t.slice(1) });
@@ -328,9 +341,18 @@ async function boot() {
   }
 
   // 10. Launch
-  pushHistory({ type: 'browse', tab: 'trending', label: 'Trending' });
-  showBrowse();
-  loadBrowse('trending', EL.browseContent, { onCardClick: loadPlayer });
+  const startupTab = validTab(stores.prefs.rememberLastTab ? stores.prefs.lastActiveTab : stores.prefs.defaultTab);
+  currentTab = startupTab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === startupTab));
+  if (startupTab === 'my') {
+    pushHistory({ type: 'my', label: tabLabel(startupTab) });
+    showMyTab();
+    renderMyTab();
+  } else {
+    pushHistory({ type: 'browse', tab: startupTab, label: tabLabel(startupTab) });
+    showBrowse();
+    loadBrowse(startupTab, EL.browseContent, { onCardClick: loadPlayer });
+  }
 }
 
 boot();

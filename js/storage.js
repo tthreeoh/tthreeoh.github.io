@@ -24,7 +24,7 @@ export const StorageManager = (() => {
 
   // ── ff_prefs ──────────────────────────────────────────────────────────────
   SCHEMAS['ff_prefs'] = {
-    version: 1,
+    version: 2,
     defaults: () => ({
       omdbKey:    'trilogy',
       tmdbKey:    '',
@@ -33,6 +33,13 @@ export const StorageManager = (() => {
       githubRepo: '',   // e.g. "username/freeflow-data"
       githubFile: 'freeflow-data.json',
       githubAutoSync: false,
+      theme: 'dark',
+      accent: 'red',
+      cardDensity: 'standard',
+      defaultTab: 'trending',
+      rememberLastTab: false,
+      lastActiveTab: 'trending',
+      alwaysShowCardActions: false,
     }),
     migrations: {
       1: d => ({
@@ -44,6 +51,19 @@ export const StorageManager = (() => {
         githubFile:    typeof d?.githubFile === 'string' ? d.githubFile : 'freeflow-data.json',
         githubAutoSync:typeof d?.githubAutoSync==='boolean'? d.githubAutoSync: false,
       }),
+      2: d => {
+        const oneOf = (value, allowed, fallback) => allowed.includes(value) ? value : fallback;
+        return {
+          ...d,
+          theme: typeof d?.theme === 'string' ? oneOf(d.theme, ['dark','light','contrast'], 'dark') : 'dark',
+          accent: typeof d?.accent === 'string' ? oneOf(d.accent, ['red','teal','gold','blue'], 'red') : 'red',
+          cardDensity: typeof d?.cardDensity === 'string' ? oneOf(d.cardDensity, ['compact','standard','roomy'], 'standard') : 'standard',
+          defaultTab: typeof d?.defaultTab === 'string' ? oneOf(d.defaultTab, ['trending','movies','tv','my'], 'trending') : 'trending',
+          rememberLastTab: typeof d?.rememberLastTab === 'boolean' ? d.rememberLastTab : false,
+          lastActiveTab: typeof d?.lastActiveTab === 'string' ? oneOf(d.lastActiveTab, ['trending','movies','tv','my'], 'trending') : 'trending',
+          alwaysShowCardActions: typeof d?.alwaysShowCardActions === 'boolean' ? d.alwaysShowCardActions : false,
+        };
+      },
     },
   };
 

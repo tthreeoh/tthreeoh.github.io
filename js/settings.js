@@ -6,7 +6,23 @@ import { StorageManager, FileStorageAdapter } from './storage.js';
 import * as GH from './github.js';
 
 let _deps = {};
-export function initSettings(deps) { _deps = deps; _wireAll(); }
+const VALID_TABS = ['trending','movies','tv','my'];
+const PREF_DEFAULTS = {
+  theme: 'dark',
+  accent: 'red',
+  cardDensity: 'standard',
+  defaultTab: 'trending',
+  rememberLastTab: false,
+  alwaysShowCardActions: false,
+};
+const ACCENTS = {
+  red:  { main: '#e63946', dim: '#7a1d22' },
+  teal: { main: '#2bb3a3', dim: '#14534c' },
+  gold: { main: '#d6a73a', dim: '#5a4516' },
+  blue: { main: '#4fc3f7', dim: '#1a4a5a' },
+};
+
+export function initSettings(deps) { _deps = deps; applyPreferences(); _wireAll(); }
 
 function _wireAll() {
   // Settings open/close
@@ -21,6 +37,7 @@ function _wireAll() {
     document.getElementById('spanel-' + btn.dataset.stab)?.classList.add('active');
     if (btn.dataset.stab === 'library') updateLibStats();
   }));
+  _wirePreferenceControls();
   // OMDB key
   document.getElementById('keyBtn')?.addEventListener('click', async () => {
     const v = document.getElementById('keyInput').value.trim(); if (!v) return;
@@ -45,9 +62,9 @@ function _wireAll() {
     } else { if (el) { el.textContent = '✗ Invalid TMDB key'; el.style.color = 'var(--red)'; } }
   });
   // Merge radios
-  document.querySelectorAll('.radio-opt').forEach(o => o.addEventListener('click', () => {
+  document.querySelectorAll('#mergeRadios .radio-opt').forEach(o => o.addEventListener('click', () => {
     _deps.stores.prefs.mergeMode = o.dataset.val; _deps.savePrefs();
-    document.querySelectorAll('.radio-opt').forEach(x => x.classList.toggle('sel', x.dataset.val === o.dataset.val));
+    document.querySelectorAll('#mergeRadios .radio-opt').forEach(x => x.classList.toggle('sel', x.dataset.val === o.dataset.val));
   }));
   // Backup
   document.getElementById('exportAllBtn')?.addEventListener('click', () => _dl(StorageManager.exportAll(), 'freeflow-backup-' + new Date().toISOString().slice(0,10) + '.json', 'application/json'));
@@ -162,8 +179,27 @@ function _wireAll() {
 export function openSettings()  { syncSettingsUI(); document.getElementById('settingsDrawer').classList.add('open');  document.getElementById('settingsDim').classList.add('open'); }
 export function closeSettings() { document.getElementById('settingsDrawer').classList.remove('open'); document.getElementById('settingsDim').classList.remove('open'); }
 
+export function applyPreferences() {
+  const p = _deps.stores?.prefs || {};
+  const root = document.documentElement;
+  const theme = ['dark','light','contrast'].includes(p.theme) ? p.theme : PREF_DEFAULTS.theme;
+  const density = ['compact','standard','roomy'].includes(p.cardDensity) ? p.cardDensity : PREF_DEFAULTS.cardDensity;
+  const accent = ACCENTS[p.accent] || ACCENTS[PREF_DEFAULTS.accent];
+
+  root.dataset.theme = theme;
+  root.dataset.density = density;
+  root.classList.toggle('card-actions-always', !!p.alwaysShowCardActions);
+  root.style.setProperty('--red', accent.main);
+  root.style.setProperty('--red-dim', accent.dim);
+
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeMeta) themeMeta.content = accent.main;
+}
+
 export function syncSettingsUI() {
-  document.querySelectorAll('.radio-opt').forEach(o => o.classList.toggle('sel', o.dataset.val === _deps.stores.prefs.mergeMode));
+  applyPreferences();
+  document.querySelectorAll('#mergeRadios .radio-opt').forEach(o => o.classList.toggle('sel', o.dataset.val === _deps.stores.prefs.mergeMode));
+  syncPreferenceControls();
   updateLibStats(); renderSnippets(); renderSchemaBanner(); updateGitHubUI();
   const p = _deps.stores.prefs;
   const ghToken = document.getElementById('ghToken'); if (ghToken && p.githubToken) ghToken.value = p.githubToken;
@@ -172,6 +208,65 @@ export function syncSettingsUI() {
   const ghAuto = document.getElementById('ghAutoSync'); if (ghAuto) ghAuto.checked = !!p.githubAutoSync;
   const tmdbInp = document.getElementById('tmdbKeyInput'); if (tmdbInp && p.tmdbKey) tmdbInp.value = p.tmdbKey;
 }
+
+function _wirePreferenceControls() {
+  document.querySelectorAll('[data-pref-key][data-pref-value]').forEach(btn => btn.addEventListener('click', () => {
+    _setPref(btn.dataset.prefKey, btn.dataset.prefValue);
+  }));
+  document.getElementById('defaultTabSelect')?.addEventListener('change', e => {
+    _setPref('defaultTab', _validTab(e.target.value));
+  });
+  document.getElementById('rememberLastTabToggle')?.addEventListener('change', e => {
+    _deps.stores.prefs.rememberLastTab = !!e.target.checked;
+    if (_deps.stores.prefs.rememberLastTab) {
+      _deps.stores.prefs.lastActiveTab = _validTab(_deps.currentTabGetter?.() || _deps.stores.prefs.lastActiveTab);
+    }
+    _deps.savePrefs(); syncPreferenceControls();
+  });
+  document.getElementById('alwaysShowActionsToggle')?.addEventListener('change', e => {
+    _setPref('alwaysShowCardActions', !!e.target.checked);
+  });
+  document.getElementById('settingsQueueAutoRemove')?.addEventListener('change', e => {
+    if (!_deps.stores.userdata) return;
+    _deps.stores.userdata.queueAutoRemove = !!e.target.checked;
+    _deps.saveUserdata?.();
+    _syncQueueAutoRemoveUI();
+  });
+}
+
+function syncPreferenceControls() {
+  const p = _deps.stores?.prefs || {};
+  document.querySelectorAll('[data-pref-key][data-pref-value]').forEach(btn => {
+    const key = btn.dataset.prefKey;
+    const current = p[key] ?? PREF_DEFAULTS[key];
+    btn.classList.toggle('sel', String(current) === btn.dataset.prefValue);
+  });
+  const defaultTab = document.getElementById('defaultTabSelect'); if (defaultTab) defaultTab.value = _validTab(p.defaultTab);
+  const remember = document.getElementById('rememberLastTabToggle'); if (remember) remember.checked = !!p.rememberLastTab;
+  const showActions = document.getElementById('alwaysShowActionsToggle'); if (showActions) showActions.checked = !!p.alwaysShowCardActions;
+  _syncQueueAutoRemoveUI();
+}
+
+function _setPref(key, value) {
+  if (!_deps.stores?.prefs) return;
+  _deps.stores.prefs[key] = value;
+  _deps.savePrefs?.();
+  applyPreferences();
+  syncPreferenceControls();
+}
+
+function _syncQueueAutoRemoveUI() {
+  const on = !!_deps.stores?.userdata?.queueAutoRemove;
+  const setting = document.getElementById('settingsQueueAutoRemove'); if (setting) setting.checked = on;
+  const btn = document.getElementById('queueAutoRemoveToggle');
+  if (btn) {
+    btn.textContent = 'AUTO-REMOVE: ' + (on ? 'ON' : 'OFF');
+    btn.style.color = on ? 'var(--green)' : '';
+    btn.style.borderColor = on ? 'var(--green-dim)' : '';
+  }
+}
+
+function _validTab(tab) { return VALID_TABS.includes(tab) ? tab : 'trending'; }
 
 export function renderSchemaBanner() {
   const el = document.getElementById('schemaBanner'); if (!el) return;
