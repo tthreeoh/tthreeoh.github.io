@@ -10,6 +10,8 @@ import { configure as configureGitHub, pull as githubPull, push as githubPush,
 import { initPlayer, loadPlayer, execLoadPlayer } from './player.js';
 import { initUserdata, isFav, isQueued, toggleFav, addToQueue, removeFromQueue,
          markQueueWatched, addToHistory, setContinueWatching, getContinueWatching,
+         isWatched, isMovieWatched, isEpisodeWatched, toggleMovieWatched, toggleEpisodeWatched,
+         markMovieWatched, getWatchedEpisodeCount,
          createGroup, renderMyTab } from './userdata.js';
 import { initWatchlist, renderWatchlist as renderWL, updateAddBtn } from './watchlist.js';
 import { initSettings, syncSettingsUI, renderSchemaBanner, updateLibStats, updateFileSyncUI } from './settings.js';
@@ -290,18 +292,19 @@ async function boot() {
   // 3. Wire grid callbacks
   registerGridCallbacks({
     isFav, isQueued, toggleFav, addToQueue, removeFromQueue,
+    isWatched, toggleWatched: toggleMovieWatched,
     getWatchlist: () => stores.watchlist,
   });
 
   // 3. Init modules
-  initPlayer({ EL, stores, pushHistory, showPlayer, showBrowse, loadBrowse, loadPlayer: null, fetchFull, setContinueWatching, getContinueWatching, updateAddBtn, saveWL, saveUserdata });
-  initUserdata({ stores, saveUserdata, loadPlayer: null });
-  initWatchlist({ stores, saveWL, EL });
+  initPlayer({ EL, stores, pushHistory, showPlayer, showBrowse, loadBrowse, loadPlayer: null, fetchFull, setContinueWatching, getContinueWatching, isMovieWatched, isEpisodeWatched, toggleMovieWatched, toggleEpisodeWatched, updateAddBtn, saveWL, saveUserdata });
+  initUserdata({ stores, saveUserdata, saveWL, loadPlayer: null });
+  initWatchlist({ stores, saveWL, EL, markMovieWatched, isMovieWatched, getWatchedEpisodeCount });
   initSettings({ stores, savePrefs, saveLibraryStore, saveMeta, saveSnippets, saveUserdata, EL, FileStorageAdapter, StorageManager, syncKeyUI, setKeyDot, setKeyStatus, loadBrowse, EL_browseContent: EL.browseContent, currentTabGetter: () => currentTab });
 
   // Circular: give player/userdata the loadPlayer fn after it's defined
   const { loadPlayer: _lp } = await import('./player.js');
-  initUserdata({ stores, saveUserdata, loadPlayer: _lp });
+  initUserdata({ stores, saveUserdata, saveWL, loadPlayer: _lp });
 
   // 4. Init GitHub if configured
   if (stores.prefs.githubToken && stores.prefs.githubRepo) {

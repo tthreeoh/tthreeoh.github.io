@@ -25,9 +25,14 @@ export function renderWatchlist() {
   wl.forEach(item => {
     const div = document.createElement('div');
     div.className = 'wl-item';
-    const ws = item.watchedAt
-      ? `<span class="watched-dot"></span>watched ${new Date(item.watchedAt).toLocaleDateString()}`
-      : 'not watched';
+    const isSeries = item.type === 'series';
+    const episodeCount = isSeries ? (_deps.getWatchedEpisodeCount?.(item.imdbId) || 0) : 0;
+    const movieWatched = !isSeries && (_deps.isMovieWatched?.(item.imdbId) || item.watchedAt);
+    const watchedAt = item.watchedAt || _deps.stores.userdata?.watchedMovies?.[item.imdbId]?.watchedAt;
+    const ws = isSeries
+      ? (episodeCount ? `<span class="watched-dot"></span>${episodeCount} episode${episodeCount !== 1 ? 's' : ''} watched` : 'no episodes watched')
+      : (movieWatched ? `<span class="watched-dot"></span>watched ${new Date(watchedAt || Date.now()).toLocaleDateString()}` : 'not watched');
+    const actionLabel = isSeries ? (episodeCount ? '✓ episodes' : 'episodes') : (movieWatched ? '✓ seen' : '👁 mark');
     div.innerHTML = `
       <img class="wl-item-poster" src="${item.poster||''}" alt="" onerror="this.style.display='none'">
       <div class="wl-item-info">
@@ -37,7 +42,7 @@ export function renderWatchlist() {
       </div>
       <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0">
         <button class="btn-remove" title="Remove">✕</button>
-        <button class="wl-btn" style="font-size:9px;padding:3px 6px;${item.watchedAt?'color:#4caf50;border-color:#1a3a1a':''}">${item.watchedAt?'✓ seen':'👁 mark'}</button>
+        <button class="wl-btn" style="font-size:9px;padding:3px 6px;${movieWatched||episodeCount?'color:#4caf50;border-color:#1a3a1a':''}">${actionLabel}</button>
       </div>`;
     div.querySelector('.wl-item-info').addEventListener('click', () => {
       closeWatchlist();
@@ -50,8 +55,18 @@ export function renderWatchlist() {
     });
     div.querySelector('.wl-btn').addEventListener('click', e => {
       e.stopPropagation();
+      if (item.type === 'series') {
+        closeWatchlist();
+        import('./player.js').then(m => m.loadPlayer(item.imdbId, item.type));
+        return;
+      }
       const ent = stores.watchlist.find(w => w.imdbId === item.imdbId);
-      if (ent) { ent.watchedAt = ent.watchedAt ? null : new Date().toISOString(); _deps.saveWL(); renderWatchlist(); updateAddBtn(); }
+      if (ent) {
+        const next = !(ent.type !== 'series' && _deps.isMovieWatched?.(ent.imdbId)) && !ent.watchedAt;
+        ent.watchedAt = next ? new Date().toISOString() : null;
+        if (ent.type !== 'series') _deps.markMovieWatched?.(ent.imdbId, ent, next);
+        _deps.saveWL(); renderWatchlist(); updateAddBtn();
+      }
     });
     list.appendChild(div);
   });
@@ -132,7 +147,9 @@ function _wireEvents() {
     const d   = e.detail;
     let entry = stores.watchlist.find(w => w.imdbId === d.imdbId);
     if (!entry) { entry = { ...d, addedAt: new Date().toISOString(), watchedAt: null }; stores.watchlist.push(entry); }
-    entry.watchedAt = entry.watchedAt ? null : new Date().toISOString();
+    const next = !(entry.type !== 'series' && _deps.isMovieWatched?.(entry.imdbId)) && !entry.watchedAt;
+    entry.watchedAt = next ? new Date().toISOString() : null;
+    if (entry.type !== 'series') _deps.markMovieWatched?.(entry.imdbId, entry, next);
     saveWL(); renderWatchlist();
   });
 }

@@ -48,7 +48,10 @@ export function addToQueue(imdbId, meta) {
 export function removeFromQueue(imdbId) { ud().queue = ud().queue.filter(q => q.imdbId !== imdbId); save(); renderQueue(); }
 export function markQueueWatched(imdbId) {
   const e = ud().queue.find(q => q.imdbId === imdbId); if (!e) return;
-  e.watchedAt = new Date().toISOString(); addToHistory(imdbId, e);
+  e.watchedAt = new Date().toISOString();
+  const cont = ud().continueWatching[imdbId];
+  if (e.type === 'series' && cont) markEpisodeWatched(imdbId, cont.s, cont.e, e, true);
+  else markMovieWatched(imdbId, e, true);
   if (ud().queueAutoRemove) removeFromQueue(imdbId); else { save(); renderQueue(); }
 }
 
@@ -98,16 +101,124 @@ function renderQueue() {
   });
 }
 
-// History
-export function addToHistory(imdbId, meta) {
+// Watched state + history
+function _ensureWatchedStores() {
+  ud().watchedMovies ||= {};
+  ud().watchedEpisodes ||= {};
+}
+
+function _metaFor(imdbId, meta = {}) {
   const c = (_deps.stores.meta||{})[imdbId] || {};
+  return {
+    title: meta?.title || meta?.Title || c.Title || imdbId,
+    year: meta?.year || meta?.Year || c.Year || '',
+    type: meta?.type || meta?.Type || c.Type || 'movie',
+    poster: meta?.poster || (meta?.Poster && meta.Poster !== 'N/A' ? meta.Poster : '') || c.Poster || '',
+  };
+}
+
+export function isMovieWatched(imdbId) {
+  _ensureWatchedStores();
+  return !!ud().watchedMovies[imdbId];
+}
+
+export function isEpisodeWatched(imdbId, s, e) {
+  _ensureWatchedStores();
+  return !!ud().watchedEpisodes[imdbId]?.[String(s)]?.[String(e)];
+}
+
+export function getWatchedEpisodeCount(imdbId) {
+  _ensureWatchedStores();
+  const show = ud().watchedEpisodes[imdbId] || {};
+  return Object.values(show).reduce((sum, season) => sum + Object.keys(season || {}).length, 0);
+}
+
+export function isWatched(imdbId, type = 'movie') {
+  return type === 'series' ? getWatchedEpisodeCount(imdbId) > 0 : isMovieWatched(imdbId);
+}
+
+export function markMovieWatched(imdbId, meta = {}, watched = true) {
+  _ensureWatchedStores();
+  const watchedAt = ud().watchedMovies[imdbId]?.watchedAt || new Date().toISOString();
+  if (watched) {
+    const wasWatched = isMovieWatched(imdbId);
+    ud().watchedMovies[imdbId] = { watchedAt };
+    if (!wasWatched) addToHistory(imdbId, { ...meta, type: 'movie' }, { episode: null, saveAfter: false });
+  } else {
+    delete ud().watchedMovies[imdbId];
+    _removeHistory(imdbId, null);
+  }
+  const wlEntry = _deps.stores.watchlist?.find(w => w.imdbId === imdbId);
+  if (wlEntry) {
+    wlEntry.watchedAt = watched ? watchedAt : null;
+    _deps.saveWL?.();
+  }
+  save(); _refreshWatchedUI(imdbId, 'movie');
+}
+
+export function toggleMovieWatched(imdbId, meta = {}) {
+  markMovieWatched(imdbId, meta, !isMovieWatched(imdbId));
+}
+
+export function markEpisodeWatched(imdbId, s, e, meta = {}, watched = true) {
+  _ensureWatchedStores();
+  const season = String(+s || 1);
+  const episode = String(+e || 1);
+  ud().watchedEpisodes[imdbId] ||= {};
+  ud().watchedEpisodes[imdbId][season] ||= {};
+  const wasWatched = !!ud().watchedEpisodes[imdbId][season][episode];
+
+  if (watched) {
+    ud().watchedEpisodes[imdbId][season][episode] = {
+      watchedAt: ud().watchedEpisodes[imdbId][season][episode]?.watchedAt || new Date().toISOString(),
+    };
+    if (!wasWatched) addToHistory(imdbId, { ...meta, type: 'series' }, { episode: { s: +season, e: +episode }, saveAfter: false });
+  } else {
+    delete ud().watchedEpisodes[imdbId][season][episode];
+    if (!Object.keys(ud().watchedEpisodes[imdbId][season]).length) delete ud().watchedEpisodes[imdbId][season];
+    if (!Object.keys(ud().watchedEpisodes[imdbId]).length) delete ud().watchedEpisodes[imdbId];
+    _removeHistory(imdbId, { s: +season, e: +episode });
+  }
+  save(); _refreshWatchedUI(imdbId, 'series');
+}
+
+export function toggleEpisodeWatched(imdbId, s, e, meta = {}) {
+  markEpisodeWatched(imdbId, s, e, meta, !isEpisodeWatched(imdbId, s, e));
+}
+
+export function addToHistory(imdbId, meta = {}, opts = {}) {
+  const m = _metaFor(imdbId, meta);
   const cont = ud().continueWatching[imdbId];
+  const episode = opts.episode !== undefined ? opts.episode : (m.type === 'series' && cont ? { s: cont.s, e: cont.e } : null);
   ud().history.unshift({ imdbId,
-    title: meta?.title || c.Title || imdbId, year: meta?.year || c.Year || '',
-    type: meta?.type || c.Type || 'movie', poster: meta?.poster || c.Poster || '',
-    watchedAt: new Date().toISOString(), episode: cont ? { s: cont.s, e: cont.e } : null });
+    title: m.title, year: m.year, type: m.type, poster: m.poster,
+    watchedAt: new Date().toISOString(), episode });
   if (ud().history.length > 500) ud().history = ud().history.slice(0, 500);
-  save();
+  if (opts.saveAfter !== false) save();
+}
+
+function _removeHistory(imdbId, episode) {
+  ud().history = ud().history.filter(item => {
+    if (item.imdbId !== imdbId) return true;
+    if (!episode) return !!item.episode;
+    return !(item.episode && +item.episode.s === +episode.s && +item.episode.e === +episode.e);
+  });
+}
+
+function _refreshWatchedUI(imdbId, type) {
+  document.querySelectorAll(`.card[data-imdb="${imdbId}"]`).forEach(card => {
+    const watched = isWatched(imdbId, type || card.dataset.type);
+    card.classList.toggle('is-watched', watched);
+    const btn = card.querySelector('.ca-watched');
+    if (btn) {
+      btn.classList.toggle('watched', watched);
+      btn.textContent = card.dataset.type === 'series'
+        ? (watched ? '✓ episodes' : 'episodes')
+        : (watched ? '✓ watched' : '👁 watched');
+    }
+  });
+  if (document.getElementById('mysec-history')?.classList.contains('active')) renderHistory();
+  if (document.getElementById('mysec-collections')?.classList.contains('active')) renderCollections();
 }
 
 function renderHistory() {
@@ -363,8 +474,7 @@ export async function refreshCollection(colId) {
 export function updateCollectionComplete(colId) {
   const col = (ud().collections || {})[String(colId)];
   if (!col) return;
-  const watched = new Set(ud().history.map(h => h.imdbId));
-  col.complete = col.members.every(id => watched.has(id));
+  col.complete = col.members.every(id => isMovieWatched(id));
   save();
 }
 
@@ -388,7 +498,7 @@ function renderCollections() {
   cols.forEach(col => {
     const div = document.createElement('div');
     div.className = 'collection-card';
-    const watched = col.members.filter(id => ud().history.some(h => h.imdbId === id)).length;
+    const watched = col.members.filter(id => isMovieWatched(id)).length;
     const pct = col.members.length ? Math.round((watched / col.members.length) * 100) : 0;
 
     div.innerHTML = `
@@ -410,7 +520,7 @@ function renderCollections() {
     // Render parts inline
     const partsEl = div.querySelector(`#colparts-${col.id}`);
     col.parts.forEach(p => {
-      const isWatched = ud().history.some(h => h.imdbId === p.imdbId);
+      const isWatched = isMovieWatched(p.imdbId);
       const part = document.createElement('div');
       part.className = 'collection-part' + (isWatched ? ' watched' : '');
       part.innerHTML = `

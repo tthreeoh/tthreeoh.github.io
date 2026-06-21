@@ -172,7 +172,7 @@ export const StorageManager = (() => {
 
   // ── ff_userdata ───────────────────────────────────────────────────────────
   SCHEMAS['ff_userdata'] = {
-    version: 2,
+    version: 3,
     defaults: () => ({
       favorites:       [],
       groups:          {},
@@ -180,6 +180,8 @@ export const StorageManager = (() => {
       queueAutoRemove: false,
       history:         [],
       continueWatching:{},
+      watchedMovies:   {},
+      watchedEpisodes: {},
       collections:     {}, // tmdbCollectionId → { id, name, tmdbId, poster, members:[imdbId], followedAt, complete }
     }),
     migrations: {
@@ -201,6 +203,34 @@ export const StorageManager = (() => {
         ...d,
         collections: (d.collections && typeof d.collections === 'object') ? d.collections : {},
       }),
+      3: d => {
+        const out = {
+          ...d,
+          watchedMovies: (d.watchedMovies && typeof d.watchedMovies === 'object') ? d.watchedMovies : {},
+          watchedEpisodes: (d.watchedEpisodes && typeof d.watchedEpisodes === 'object') ? d.watchedEpisodes : {},
+        };
+
+        const markMovie = (item) => {
+          const id = item?.imdbId || item?.imdbID;
+          if (!id || item?.type === 'series') return;
+          if (!out.watchedMovies[id]) out.watchedMovies[id] = { watchedAt: item.watchedAt || new Date().toISOString() };
+        };
+        const markEpisode = (item) => {
+          const id = item?.imdbId || item?.imdbID;
+          const ep = item?.episode;
+          if (!id || !ep?.s || !ep?.e) return;
+          const s = String(ep.s);
+          const e = String(ep.e);
+          out.watchedEpisodes[id] ||= {};
+          out.watchedEpisodes[id][s] ||= {};
+          out.watchedEpisodes[id][s][e] ||= { watchedAt: item.watchedAt || new Date().toISOString() };
+        };
+
+        (Array.isArray(out.history) ? out.history : []).forEach(item => item?.episode ? markEpisode(item) : markMovie(item));
+        (Array.isArray(out.queue) ? out.queue : []).filter(item => item?.watchedAt).forEach(markMovie);
+
+        return out;
+      },
     },
   };
 

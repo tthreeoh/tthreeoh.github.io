@@ -31,6 +31,8 @@ let _toggleFav  = () => {};
 let _addToQueue = () => {};
 let _rmQueue    = () => {};
 let _getWL      = () => [];
+let _isWatched  = () => false;
+let _toggleWatched = () => {};
 
 export function registerGridCallbacks(cbs) {
   _isFav      = cbs.isFav      || _isFav;
@@ -39,6 +41,8 @@ export function registerGridCallbacks(cbs) {
   _addToQueue = cbs.addToQueue || _addToQueue;
   _rmQueue    = cbs.removeFromQueue || _rmQueue;
   _getWL      = cbs.getWatchlist    || _getWL;
+  _isWatched  = cbs.isWatched       || _isWatched;
+  _toggleWatched = cbs.toggleWatched || _toggleWatched;
 }
 
 export function renderGrid(items, container, { onCardClick } = {}) {
@@ -55,7 +59,8 @@ export function renderGrid(items, container, { onCardClick } = {}) {
       : `<div class="no-poster">No Image</div>`;
     const isTV     = m.Type === 'series';
     const inList   = watchlist.some(w => w.imdbId === m.imdbID);
-    const isWatched= watchlist.find(w => w.imdbId === m.imdbID)?.watchedAt;
+    const legacyWatched = watchlist.find(w => w.imdbId === m.imdbID)?.watchedAt;
+    const isWatched= _isWatched(m.imdbID, m.Type || 'movie') || (!isTV && legacyWatched);
     const fav      = _isFav(m.imdbID);
     const queued   = _isQueued(m.imdbID);
 
@@ -73,7 +78,7 @@ export function renderGrid(items, container, { onCardClick } = {}) {
         <span class="card-watched-badge">✓ watched</span>
         <div class="card-overlay">
           <button class="card-action${inList ? ' in-list' : ''} ca-list">${inList ? '✓ listed' : '+ list'}</button>
-          <button class="card-action${isWatched ? ' watched' : ''} ca-watched">${isWatched ? '✓ watched' : '👁 watched'}</button>
+          <button class="card-action${isWatched ? ' watched' : ''} ca-watched">${isTV ? (isWatched ? '✓ episodes' : 'episodes') : (isWatched ? '✓ watched' : '👁 watched')}</button>
           <button class="card-action${queued ? ' in-list' : ''} ca-queue">${queued ? '✓ queued' : '+ queue'}</button>
         </div>
         <div class="card-info">
@@ -118,10 +123,15 @@ export function renderGrid(items, container, { onCardClick } = {}) {
 
     c.querySelector('.ca-watched').addEventListener('click', e => {
       e.stopPropagation();
-      c.dispatchEvent(new CustomEvent('wl:toggle-watched', { bubbles: true, detail: {
+      const detail = {
         imdbId, title: c.dataset.title, year: c.dataset.year,
         type: c.dataset.type, poster: c.dataset.poster, rating: c.dataset.rating,
-      }}));
+      };
+      if (type === 'series') {
+        if (onCardClick) onCardClick(imdbId, type);
+        return;
+      }
+      _toggleWatched(imdbId, detail);
     });
 
     c.querySelector('.ca-queue').addEventListener('click', e => {

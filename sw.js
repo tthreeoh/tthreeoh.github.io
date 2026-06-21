@@ -11,7 +11,7 @@
 // Note: playback (vidsrc.me) requires a live connection and is NOT cached.
 // ═══════════════════════════════════════════════════════════════════════════
 
-const CACHE_VERSION   = 'ff-v1';
+const CACHE_VERSION   = 'ff-v3';
 const SHELL_CACHE     = `${CACHE_VERSION}-shell`;
 const API_CACHE       = `${CACHE_VERSION}-api`;
 const IMAGE_CACHE     = `${CACHE_VERSION}-images`;

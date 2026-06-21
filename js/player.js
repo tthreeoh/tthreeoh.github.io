@@ -5,11 +5,14 @@
 let _deps = {};
 export function initPlayer(deps) { _deps = deps; }
 
+const DEFAULT_EPISODE_COUNT = 20;
+let _episodeSyncToken = 0;
+
 export async function execLoadPlayer(imdbId, type) {
-  const { EL, stores, fetchFull, setContinueWatching, getContinueWatching, updateAddBtn } = _deps;
+  const { EL, fetchFull, getContinueWatching, updateAddBtn } = _deps;
 
   EL.playerIframe.src = type === 'series'
-    ? `https://vidsrcme.ru/embed/tv?imdb=${imdbId}&season=1&episode=1`
+    ? episodeUrl(imdbId, 1, 1)
     : `https://vidsrcme.ru/embed/movie?imdb=${imdbId}`;
 
   const d = await fetchFull(imdbId);
@@ -52,17 +55,33 @@ export async function execLoadPlayer(imdbId, type) {
 
   // Episode bar
   if (type === 'series' && d.totalSeasons && +d.totalSeasons > 0) {
+    updateMovieWatchedButton(false);
     const tot = +d.totalSeasons;
     EL.seasonSel.innerHTML  = Array.from({length: tot}, (_, i) => `<option value="${i+1}">Season ${i+1}</option>`).join('');
-    EL.episodeSel.innerHTML = Array.from({length: 20}, (_, i) => `<option value="${i+1}">Episode ${i+1}</option>`).join('');
+    renderEpisodeOptions(defaultEpisodes(), 1);
     // Restore continue-watching position
     const cont = getContinueWatching(imdbId);
-    if (cont) { EL.seasonSel.value = cont.s; EL.episodeSel.value = cont.e; }
+    const startSeason = clampInt(cont?.s || 1, 1, tot);
+    const startEpisode = clampInt(cont?.e || 1, 1, DEFAULT_EPISODE_COUNT);
+    EL.seasonSel.value = startSeason;
+    renderEpisodeOptions(defaultEpisodes(), startEpisode);
+    EL.episodeBar.dataset.totalSeasons = String(tot);
+    EL.episodeBar.dataset.imdb = imdbId;
     EL.episodeBar.classList.add('visible');
+    playSelectedEpisode({ save: false });
+    updateEpisodeWatchedButton();
+    syncEpisodeOptions(startEpisode).then(selected => {
+      if (selected !== startEpisode) playSelectedEpisode({ save: false });
+      updateEpisodeWatchedButton();
+    });
   } else {
     EL.episodeBar.classList.remove('visible');
+    delete EL.episodeBar.dataset.imdb;
+    delete EL.episodeBar.dataset.totalSeasons;
+    delete EL.episodeBar.dataset.episodeSeason;
+    delete EL.episodeBar.dataset.episodeCount;
+    updateMovieWatchedButton(true);
   }
-  EL.episodeBar.dataset.imdb = imdbId;
 
   // Cast strip
   renderCastStrip(d.cast || []);
@@ -102,16 +121,189 @@ function renderCastStrip(cast) {
   }).join('');
 }
 
+function episodeUrl(imdb, season, episode) {
+  return `https://vidsrc.me/embed/tv?imdb=${imdb}&season=${season}&episode=${episode}`;
+}
+
+function clampInt(value, min, max) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return min;
+  return Math.max(min, Math.min(max, Math.trunc(n)));
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function defaultEpisodes(count = DEFAULT_EPISODE_COUNT) {
+  return Array.from({ length: count }, (_, i) => ({ number: i + 1, title: '' }));
+}
+
+async function loadSeasonEpisodes(imdb, season) {
+  try {
+    const { fetchSeasonEpisodes } = await import('./api.js');
+    const episodes = await fetchSeasonEpisodes(imdb, season);
+    if (episodes?.length) return episodes;
+  } catch {}
+  return defaultEpisodes();
+}
+
+function renderEpisodeOptions(episodes, preferredEpisode) {
+  const { EL } = _deps;
+  const list = episodes?.length ? episodes : defaultEpisodes();
+  const maxEp = list[list.length - 1]?.number || DEFAULT_EPISODE_COUNT;
+  const selected = clampInt(preferredEpisode || EL.episodeSel.value || 1, 1, maxEp);
+
+  EL.episodeSel.innerHTML = list.map(ep => {
+    const label = 'Episode ' + ep.number + (ep.title ? ' - ' + ep.title : '');
+    return `<option value="${ep.number}">${escapeHtml(label)}</option>`;
+  }).join('');
+  EL.episodeSel.value = String(selected);
+  EL.episodeBar.dataset.episodeCount = String(maxEp);
+  EL.episodeBar.dataset.episodeSeason = String(EL.seasonSel.value || 1);
+  updateEpisodeNavButtons();
+  return selected;
+}
+
+async function syncEpisodeOptions(preferredEpisode) {
+  const { EL } = _deps;
+  const imdb = EL.episodeBar.dataset.imdb;
+  const season = +EL.seasonSel.value || 1;
+  if (!imdb) return +EL.episodeSel.value || 1;
+
+  const token = ++_episodeSyncToken;
+  updateEpisodeNavButtons(true);
+  const episodes = await loadSeasonEpisodes(imdb, season);
+  if (token !== _episodeSyncToken || EL.episodeBar.dataset.imdb !== imdb || +EL.seasonSel.value !== season) {
+    return +EL.episodeSel.value || 1;
+  }
+  return renderEpisodeOptions(episodes, preferredEpisode);
+}
+
+function playSelectedEpisode({ save = true } = {}) {
+  const { EL, setContinueWatching } = _deps;
+  const imdb = EL.episodeBar.dataset.imdb;
+  const s = +EL.seasonSel.value || 1;
+  const e = +EL.episodeSel.value || 1;
+  if (!imdb) return;
+  EL.playerIframe.src = episodeUrl(imdb, s, e);
+  if (save && setContinueWatching) setContinueWatching(imdb, s, e);
+  updateEpisodeNavButtons();
+  updateEpisodeWatchedButton();
+}
+
+function updateMovieWatchedButton(show = true) {
+  const btn = document.getElementById('playerWatchedBtn');
+  const meta = _deps._currentMeta;
+  if (!btn) return;
+  if (!show || !meta || meta.Type === 'series') {
+    btn.style.display = 'none';
+    return;
+  }
+  const watched = !!_deps.isMovieWatched?.(meta.imdbID);
+  btn.style.display = '';
+  btn.classList.toggle('active', watched);
+  btn.textContent = watched ? '✓ WATCHED' : 'MARK WATCHED';
+}
+
+function updateEpisodeWatchedButton() {
+  const { EL } = _deps;
+  const btn = document.getElementById('epWatchedBtn');
+  const imdb = EL?.episodeBar?.dataset.imdb;
+  if (!btn) return;
+  if (!imdb || !EL.episodeBar.classList.contains('visible')) {
+    btn.style.display = 'none';
+    return;
+  }
+  const s = +EL.seasonSel.value || 1;
+  const e = +EL.episodeSel.value || 1;
+  const watched = !!_deps.isEpisodeWatched?.(imdb, s, e);
+  btn.style.display = '';
+  btn.classList.toggle('active', watched);
+  btn.textContent = watched ? '✓ EPISODE WATCHED' : 'MARK EPISODE WATCHED';
+}
+
+function updateEpisodeNavButtons(loading = false) {
+  const { EL } = _deps;
+  const prev = document.getElementById('prevEpBtn');
+  const next = document.getElementById('nextEpBtn');
+  if (!prev || !next || !EL?.episodeBar?.classList.contains('visible')) return;
+
+  const season = +EL.seasonSel.value || 1;
+  const episode = +EL.episodeSel.value || 1;
+  const totalSeasons = +EL.episodeBar.dataset.totalSeasons || EL.seasonSel.options.length || 1;
+  const episodeCount = +EL.episodeBar.dataset.episodeCount || EL.episodeSel.options.length || DEFAULT_EPISODE_COUNT;
+
+  prev.disabled = loading || (season <= 1 && episode <= 1);
+  next.disabled = loading || (season >= totalSeasons && episode >= episodeCount);
+}
+
+async function moveEpisode(delta) {
+  const { EL } = _deps;
+  const imdb = EL.episodeBar.dataset.imdb;
+  if (!imdb) return;
+
+  const totalSeasons = +EL.episodeBar.dataset.totalSeasons || EL.seasonSel.options.length || 1;
+  let season = +EL.seasonSel.value || 1;
+  let episode = await syncEpisodeOptions(+EL.episodeSel.value || 1);
+  let episodeCount = +EL.episodeBar.dataset.episodeCount || EL.episodeSel.options.length || DEFAULT_EPISODE_COUNT;
+
+  if (delta > 0) {
+    if (episode < episodeCount) {
+      episode += 1;
+    } else if (season < totalSeasons) {
+      season += 1;
+      episode = 1;
+      EL.seasonSel.value = String(season);
+      await syncEpisodeOptions(episode);
+    } else {
+      updateEpisodeNavButtons();
+      return;
+    }
+  } else {
+    if (episode > 1) {
+      episode -= 1;
+    } else if (season > 1) {
+      season -= 1;
+      EL.seasonSel.value = String(season);
+      episode = await syncEpisodeOptions(Number.MAX_SAFE_INTEGER);
+    } else {
+      updateEpisodeNavButtons();
+      return;
+    }
+  }
+
+  EL.episodeSel.value = String(episode);
+  playSelectedEpisode();
+}
+
 // Episode play button
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('epPlayBtn')?.addEventListener('click', () => {
-    const { EL, setContinueWatching } = _deps;
-    const imdb = EL.episodeBar.dataset.imdb;
-    const s    = EL.seasonSel.value;
-    const e    = EL.episodeSel.value;
-    EL.playerIframe.src = `https://vidsrc.me/embed/tv?imdb=${imdb}&season=${s}&episode=${e}`;
-    if (imdb && setContinueWatching) setContinueWatching(imdb, +s, +e);
+    playSelectedEpisode();
   });
+  document.getElementById('prevEpBtn')?.addEventListener('click', () => moveEpisode(-1));
+  document.getElementById('nextEpBtn')?.addEventListener('click', () => moveEpisode(1));
+  document.getElementById('epWatchedBtn')?.addEventListener('click', () => {
+    const { EL } = _deps;
+    const imdb = EL.episodeBar.dataset.imdb;
+    if (!imdb) return;
+    _deps.toggleEpisodeWatched?.(imdb, +EL.seasonSel.value || 1, +EL.episodeSel.value || 1, _deps._currentMeta || {});
+    updateEpisodeWatchedButton();
+  });
+  document.getElementById('playerWatchedBtn')?.addEventListener('click', () => {
+    const meta = _deps._currentMeta;
+    if (!meta?.imdbID) return;
+    _deps.toggleMovieWatched?.(meta.imdbID, meta);
+    updateMovieWatchedButton(true);
+  });
+  document.getElementById('seasonSel')?.addEventListener('change', () => syncEpisodeOptions(1).then(updateEpisodeWatchedButton));
+  document.getElementById('episodeSel')?.addEventListener('change', () => { updateEpisodeNavButtons(); updateEpisodeWatchedButton(); });
 
   // Fullscreen
   document.getElementById('fullscreenBtn')?.addEventListener('click', () => {

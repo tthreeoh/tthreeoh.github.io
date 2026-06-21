@@ -241,6 +241,32 @@ export async function omdbSearch(query, type) {
   return _omdbFetch(params);
 }
 
+const _seasonCache = new Map();
+
+export async function fetchSeasonEpisodes(imdbId, season) {
+  const s = Number(season);
+  if (!imdbId || !Number.isInteger(s) || s < 1) return null;
+
+  const key = imdbId + ':' + s;
+  if (_seasonCache.has(key)) return _seasonCache.get(key);
+
+  const data = await _omdbFetch({ i: imdbId, Season: s });
+  if (data?.Response !== 'True' || !Array.isArray(data.Episodes)) return null;
+
+  const episodes = data.Episodes
+    .map(ep => ({
+      number: Number(ep.Episode),
+      title: ep.Title || '',
+      released: ep.Released || '',
+      imdbRating: ep.imdbRating || '',
+    }))
+    .filter(ep => Number.isInteger(ep.number) && ep.number > 0)
+    .sort((a, b) => a.number - b.number);
+
+  _seasonCache.set(key, episodes);
+  return episodes;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // WEB WORKER BRIDGE — background prefetch for visible categories
 // ─────────────────────────────────────────────────────────────────────────────
